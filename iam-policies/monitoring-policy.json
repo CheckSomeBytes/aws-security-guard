@@ -1,0 +1,58 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudTrailReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "cloudtrail:ListTrails",
+        "cloudtrail:GetTrail",
+        "cloudtrail:GetTrailStatus",
+        "cloudtrail:GetEventSelectors",
+        "cloudtrail:DescribeTrails"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "GuardDutyReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "guardduty:ListDetectors",
+        "guardduty:GetDetector",
+        "guardduty:ListFilters",
+        "guardduty:GetFilter",
+        "guardduty:ListPublishingDestinations",
+        "guardduty:DescribePublishingDestination"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EventBridgeReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "events:ListRules",
+        "events:DescribeRule",
+        "events:ListTargetsByRule",
+        "events:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EC2ReadRegions",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeRegions"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "STSAssumeRole",
+      "Effect": "Allow",
+      "Action": [
+        "sts:AssumeRole",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

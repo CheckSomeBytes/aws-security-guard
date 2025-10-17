@@ -1,0 +1,23 @@
+{
+  "credentials": {
+    "access_key_id": "YOUR_ACCESS_KEY_ID",
+    "secret_access_key": "YOUR_SECRET_ACCESS_KEY"
+  },
+  "accounts": [
+    {
+      "account_id": "123456789012",
+      "role_arn": "arn:aws:iam::123456789012:role/SecurityMonitorRole",
+      "name": "production"
+    },
+    {
+      "account_id": "210987654321",
+      "role_arn": "arn:aws:iam::210987654321:role/SecurityMonitorRole",
+      "name": "staging"
+    }
+  ],
+  "monitoring": {
+    "interval_seconds": 120,
+    "log_file": "security-watch.log",
+    "state_directory": "state"
+  }
+}

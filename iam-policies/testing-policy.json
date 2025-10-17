@@ -1,0 +1,106 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3BucketManagement",
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket",
+        "s3:DeleteBucket",
+        "s3:PutBucketPolicy",
+        "s3:DeleteBucketPolicy",
+        "s3:ListBucket",
+        "s3:ListBucketVersions",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion"
+      ],
+      "Resource": [
+        "arn:aws:s3:::aws-security-watch-test-bucket*",
+        "arn:aws:s3:::aws-security-watch-test-bucket*/*"
+      ]
+    },
+    {
+      "Sid": "CloudTrailManagement",
+      "Effect": "Allow",
+      "Action": [
+        "cloudtrail:CreateTrail",
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:UpdateTrail",
+        "cloudtrail:StartLogging",
+        "cloudtrail:StopLogging",
+        "cloudtrail:PutEventSelectors",
+        "cloudtrail:ListTrails",
+        "cloudtrail:GetTrail",
+        "cloudtrail:GetTrailStatus",
+        "cloudtrail:GetEventSelectors"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "GuardDutyManagement",
+      "Effect": "Allow",
+      "Action": [
+        "guardduty:CreateDetector",
+        "guardduty:DeleteDetector",
+        "guardduty:UpdateDetector",
+        "guardduty:GetDetector",
+        "guardduty:ListDetectors",
+        "guardduty:CreateFilter",
+        "guardduty:DeleteFilter",
+        "guardduty:UpdateFilter",
+        "guardduty:GetFilter",
+        "guardduty:ListFilters",
+        "guardduty:CreatePublishingDestination",
+        "guardduty:DeletePublishingDestination",
+        "guardduty:UpdatePublishingDestination",
+        "guardduty:ListPublishingDestinations",
+        "guardduty:DescribePublishingDestination"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EventBridgeManagement",
+      "Effect": "Allow",
+      "Action": [
+        "events:PutRule",
+        "events:DeleteRule",
+        "events:DescribeRule",
+        "events:ListRules",
+        "events:EnableRule",
+        "events:DisableRule",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "events:ListTargetsByRule",
+        "events:TagResource",
+        "events:UntagResource",
+        "events:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMServiceRole",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:PassRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EC2ReadRegions",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeRegions"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "STSGetCallerIdentity",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
