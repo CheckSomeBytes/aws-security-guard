@@ -93,8 +93,13 @@ def monitor_service_in_region(
                     data_key = 'trail_data'
                 elif service_name == 'guardduty':
                     data_key = 'guardduty_data'
-                else:  # eventbridge
+                elif service_name == 'eventbridge':
                     data_key = 'rule_data'
+                elif service_name == 's3':
+                    data_key = 's3_data'
+                else:
+                    # Default to service_name + '_data' for future services
+                    data_key = f'{service_name}_data'
 
                 log_function(
                     log_file,

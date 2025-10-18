@@ -169,19 +169,24 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
         print(f"✓ S3 destination changed to {bucket2_name}")
         wait_for_user(interactive, delay_seconds)
 
-        # Test 3: Update event selectors
-        print("\nTest 3: Updating event selectors...")
+        # Test 3: Update event selectors (add S3 data events)
+        print("\nTest 3: Updating event selectors to include S3 data events...")
         cloudtrail.put_event_selectors(
             TrailName=trail_name,
             EventSelectors=[
                 {
                     'ReadWriteType': 'All',
                     'IncludeManagementEvents': True,
-                    'DataResources': []
+                    'DataResources': [
+                        {
+                            'Type': 'AWS::S3::Object',
+                            'Values': [f'arn:aws:s3:::{bucket1_name}/']
+                        }
+                    ]
                 }
             ]
         )
-        print("✓ Event selectors updated")
+        print("✓ Event selectors updated to include S3 data events")
         wait_for_user(interactive, delay_seconds)
 
         # Test 4: Delete trail
