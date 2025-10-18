@@ -429,6 +429,159 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
         delete_s3_bucket(s3, bucket_name)
 
 
+def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
+    """Test SQS queue monitoring"""
+    print(f"\n=== Testing SQS Monitoring in {region} ===")
+    cloudtrail = session.client('cloudtrail', region_name=region)
+    s3 = session.client('s3', region_name=region)
+    sqs = session.client('sqs', region_name=region)
+
+    trail_name = f"aws-security-watch-test-trail-{test_name}"
+    bucket_name = f"aws-security-watch-test-bucket-sqsmon-{test_name}".lower()
+    queue_name = f"aws-security-watch-test-queue-{test_name}"
+
+    delay_seconds = 120  # 2 minutes
+    queue_url = None
+
+    try:
+        # Create S3 bucket
+        print(f"Creating S3 bucket: {bucket_name}")
+        create_s3_bucket(s3, bucket_name, region)
+
+        # Create CloudTrail to link the bucket
+        print(f"Creating CloudTrail: {trail_name}")
+        cloudtrail.create_trail(
+            Name=trail_name,
+            S3BucketName=bucket_name,
+            IsMultiRegionTrail=False
+        )
+        cloudtrail.start_logging(Name=trail_name)
+        print(f"✓ CloudTrail created and linked to S3 bucket")
+
+        # Test 1: Create SQS queue
+        print("\nTest 1: Creating SQS queue...")
+        response = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={
+                'MessageRetentionPeriod': '345600'  # 4 days
+            }
+        )
+        queue_url = response['QueueUrl']
+
+        # Get queue ARN
+        attrs = sqs.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['QueueArn'])
+        queue_arn = attrs['Attributes']['QueueArn']
+        print(f"✓ SQS queue created: {queue_name}")
+        wait_for_user(interactive, delay_seconds, "SQS queue created.")
+
+        # Test 2: Configure S3 event notification to SQS
+        print("\nTest 2: Configuring S3 event notification to SQS...")
+        # Add permission to SQS to allow S3 to send messages
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "sqs:SendMessage",
+                    "Resource": queue_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                }
+            ]
+        }
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={'Policy': json.dumps(policy)}
+        )
+
+        # Configure S3 notification
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={
+                'QueueConfigurations': [
+                    {
+                        'Id': 'test-notification',
+                        'QueueArn': queue_arn,
+                        'Events': ['s3:ObjectCreated:*']
+                    }
+                ]
+            }
+        )
+        print("✓ S3 event notification configured to SQS")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 3: Add encryption to queue
+        print("\nTest 3: Adding encryption to SQS queue...")
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={
+                'KmsMasterKeyId': 'alias/aws/sqs',
+                'KmsDataKeyReusePeriodSeconds': '300'
+            }
+        )
+        print("✓ Encryption added to queue")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 4: Update queue policy
+        print("\nTest 4: Updating queue access policy...")
+        updated_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "sqs:SendMessage",
+                    "Resource": queue_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                },
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Action": "sqs:GetQueueAttributes",
+                    "Resource": queue_arn
+                }
+            ]
+        }
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={'Policy': json.dumps(updated_policy)}
+        )
+        print("✓ Queue policy updated")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 5: Delete queue
+        print("\nTest 5: Deleting SQS queue...")
+        sqs.delete_queue(QueueUrl=queue_url)
+        print("✓ Queue deleted")
+        wait_for_user(interactive, delay_seconds)
+
+    except Exception as e:
+        print(f"Error in SQS monitoring test: {str(e)}")
+    finally:
+        # Cleanup
+        print("Cleaning up SQS monitoring test resources...")
+        if queue_url:
+            try:
+                sqs.delete_queue(QueueUrl=queue_url)
+            except:
+                pass
+
+        try:
+            cloudtrail.delete_trail(Name=trail_name)
+        except:
+            pass
+
+        delete_s3_bucket(s3, bucket_name)
+
+
 def test_eventbridge(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
     """Test EventBridge monitoring"""
     print(f"\n=== Testing EventBridge in {region} ===")

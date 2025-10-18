@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 import credentials
 import state_manager
 import logger
-from monitors import cloudtrail_monitor, guardduty_monitor, eventbridge_monitor, s3_monitor
+from monitors import cloudtrail_monitor, guardduty_monitor, eventbridge_monitor, s3_monitor, sqs_monitor
 
 
 def get_all_regions(session: boto3.Session) -> List[str]:
@@ -159,12 +159,13 @@ def monitor_account_region(
         ('cloudtrail', cloudtrail_monitor, logger.log_cloudtrail_change),
         ('guardduty', guardduty_monitor, logger.log_guardduty_change),
         ('eventbridge', eventbridge_monitor, logger.log_eventbridge_change),
-        ('s3', s3_monitor, logger.log_s3_change)
+        ('s3', s3_monitor, logger.log_s3_change),
+        ('sqs', sqs_monitor, logger.log_sqs_change)
     ]
 
     # Monitor all services in parallel
     service_results = []
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         futures = []
         for service_name, monitor_module, log_function in services:
             future = executor.submit(
