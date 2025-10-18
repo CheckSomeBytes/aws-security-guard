@@ -80,7 +80,8 @@
       "Sid": "LambdaReadAccess",
       "Effect": "Allow",
       "Action": [
-        "lambda:ListEventSourceMappings"
+        "lambda:ListEventSourceMappings",
+        "lambda:GetFunction"
       ],
       "Resource": "*"
     },

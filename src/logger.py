@@ -222,6 +222,33 @@ def log_sns_change(
     )
 
 
+def log_lambda_change(
+    log_file: str,
+    account_id: str,
+    region: str,
+    event_name: str,
+    lambda_data: Dict[str, Any]
+) -> None:
+    """
+    Log a Lambda function configuration change
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        region: AWS region
+        event_name: Type of change
+        lambda_data: Lambda function configuration data
+    """
+    log_event(
+        log_file=log_file,
+        event_source="lambda.amazonaws.com",
+        event_name=event_name,
+        account_id=account_id,
+        region=region,
+        response_elements=lambda_data
+    )
+
+
 def log_permission_error(
     log_file: str,
     account_id: str,
