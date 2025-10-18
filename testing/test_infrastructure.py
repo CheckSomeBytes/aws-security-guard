@@ -582,6 +582,194 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
         delete_s3_bucket(s3, bucket_name)
 
 
+def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
+    """Test SNS monitoring via S3 event notifications"""
+    print(f"\n=== Testing SNS Monitoring in {region} ===")
+
+    s3 = session.client('s3', region_name=region)
+    sns_client = session.client('sns', region_name=region)
+    cloudtrail = session.client('cloudtrail', region_name=region)
+    sts = session.client('sts')
+
+    account_id = sts.get_caller_identity()['Account']
+    bucket_name = f"aws-security-watch-test-bucket1-{test_name}"
+    trail_name = f"aws-security-watch-test-trail-{test_name}"
+    topic_name = f"aws-security-watch-test-topic-{test_name}"
+    topic_arn = None
+    delay_seconds = 120  # 2 minutes
+
+    try:
+        # Create S3 bucket for CloudTrail
+        print(f"Test Setup: Creating S3 bucket and CloudTrail trail...")
+        bucket_name = create_s3_bucket(s3, bucket_name, region)
+
+        # Create CloudTrail trail
+        cloudtrail.create_trail(
+            Name=trail_name,
+            S3BucketName=bucket_name
+        )
+        cloudtrail.start_logging(TrailName=trail_name)
+        print(f"Created CloudTrail trail: {trail_name}")
+
+        # Test 1: Create SNS topic and configure as S3 event destination
+        print("\nTest 1: Create SNS topic for S3 notifications")
+        topic_response = sns_client.create_topic(Name=topic_name)
+        topic_arn = topic_response['TopicArn']
+        print(f"Created SNS topic: {topic_arn}")
+
+        # Add topic policy to allow S3 to publish
+        topic_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "SNS:Publish",
+                    "Resource": topic_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                }
+            ]
+        }
+        sns_client.set_topic_attributes(
+            TopicArn=topic_arn,
+            AttributeName='Policy',
+            AttributeValue=json.dumps(topic_policy)
+        )
+
+        # Configure S3 to send notifications to SNS
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={
+                'TopicConfigurations': [
+                    {
+                        'TopicArn': topic_arn,
+                        'Events': ['s3:ObjectCreated:*'],
+                        'Filter': {
+                            'Key': {
+                                'FilterRules': [
+                                    {'Name': 'prefix', 'Value': 'AWSLogs/'},
+                                    {'Name': 'suffix', 'Value': '.gz'}
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        )
+        print(f"Configured S3 bucket to send notifications to SNS topic")
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect SNS topic creation")
+
+        # Test 2: Create subscription
+        print("\nTest 2: Add email subscription to SNS topic")
+        subscription_response = sns_client.subscribe(
+            TopicArn=topic_arn,
+            Protocol='email',
+            Endpoint='test@example.com'
+        )
+        print(f"Added subscription (pending confirmation): {subscription_response['SubscriptionArn']}")
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect subscription creation")
+
+        # Test 3: Update topic encryption
+        print("\nTest 3: Enable encryption on SNS topic")
+        # Note: This requires a KMS key, so we'll skip encryption test if no key available
+        # Instead, test display name change
+        sns_client.set_topic_attributes(
+            TopicArn=topic_arn,
+            AttributeName='DisplayName',
+            AttributeValue='Test CloudTrail Notifications'
+        )
+        print(f"Updated SNS topic display name")
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect display name change")
+
+        # Test 4: Update topic policy
+        print("\nTest 4: Update SNS topic policy")
+        updated_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "SNS:Publish",
+                    "Resource": topic_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                },
+                {
+                    "Sid": "AllowAccountAccess",
+                    "Effect": "Allow",
+                    "Principal": {"AWS": f"arn:aws:iam::{account_id}:root"},
+                    "Action": "SNS:GetTopicAttributes",
+                    "Resource": topic_arn
+                }
+            ]
+        }
+        sns_client.set_topic_attributes(
+            TopicArn=topic_arn,
+            AttributeName='Policy',
+            AttributeValue=json.dumps(updated_policy)
+        )
+        print(f"Updated SNS topic policy")
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect policy change")
+
+        # Test 5: Delete topic (should be detected as topic deletion)
+        print("\nTest 5: Delete SNS topic")
+        # First remove S3 notification configuration
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={}
+        )
+        print(f"Removed S3 notification configuration")
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect notification removal")
+
+        # Now delete the topic
+        sns_client.delete_topic(TopicArn=topic_arn)
+        print(f"Deleted SNS topic: {topic_arn}")
+        topic_arn = None  # Mark as deleted
+        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect topic deletion")
+
+        print("\n=== SNS Monitoring Tests Completed ===\n")
+
+    finally:
+        # Cleanup
+        print("\nCleaning up test resources...")
+        try:
+            if topic_arn:
+                try:
+                    # Remove S3 notifications first
+                    s3.put_bucket_notification_configuration(
+                        Bucket=bucket_name,
+                        NotificationConfiguration={}
+                    )
+                except Exception:
+                    pass
+                try:
+                    sns_client.delete_topic(TopicArn=topic_arn)
+                    print(f"Deleted SNS topic: {topic_arn}")
+                except Exception as e:
+                    print(f"Note: Could not delete SNS topic: {str(e)}")
+        except Exception:
+            pass
+
+        try:
+            cloudtrail.stop_logging(TrailName=trail_name)
+            cloudtrail.delete_trail(Name=trail_name)
+            print(f"Deleted CloudTrail trail: {trail_name}")
+        except Exception as e:
+            print(f"Note: Could not delete CloudTrail trail: {str(e)}")
+
+        try:
+            delete_s3_bucket(s3, bucket_name)
+        except Exception:
+            pass
+
+
 def test_eventbridge(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
     """Test EventBridge monitoring"""
     print(f"\n=== Testing EventBridge in {region} ===")
@@ -665,7 +853,7 @@ def main():
     parser.add_argument('--region', type=str, help='AWS region to test in (default: randomized per test)')
     parser.add_argument('--test-name', type=str, help='Test name (auto-generated if not provided)')
     parser.add_argument('--interactive', '-i', action='store_true', help='Interactive mode: press Enter to proceed instead of waiting')
-    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'guardduty', 'eventbridge', 'sqs', 'all'],
+    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'sqs', 'sns', 'guardduty', 'eventbridge', 'all'],
                         default='all', help='Service to test (default: all)')
     args = parser.parse_args()
 
@@ -725,6 +913,9 @@ def main():
 
     if args.service in ['sqs', 'all']:
         test_sqs_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['sns', 'all']:
+        test_sns_monitoring(session, test_region, test_name, args.interactive)
 
     if args.service in ['guardduty', 'all']:
         test_guardduty(session, test_region, test_name, args.interactive)

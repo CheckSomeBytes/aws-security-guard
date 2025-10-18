@@ -117,6 +117,20 @@
         "sqs:GetQueueUrl"
       ],
       "Resource": "arn:aws:sqs:*:*:aws-security-watch-test-*"
+    },
+    {
+      "Sid": "SNSManagement",
+      "Effect": "Allow",
+      "Action": [
+        "sns:CreateTopic",
+        "sns:DeleteTopic",
+        "sns:GetTopicAttributes",
+        "sns:SetTopicAttributes",
+        "sns:Subscribe",
+        "sns:Unsubscribe",
+        "sns:ListSubscriptionsByTopic"
+      ],
+      "Resource": "*"
     }
   ]
 }

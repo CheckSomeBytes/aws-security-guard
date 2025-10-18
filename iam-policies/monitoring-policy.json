@@ -83,6 +83,15 @@
         "lambda:ListEventSourceMappings"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "SNSReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sns:GetTopicAttributes",
+        "sns:ListSubscriptionsByTopic"
+      ],
+      "Resource": "*"
     }
   ]
 }

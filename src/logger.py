@@ -195,6 +195,33 @@ def log_sqs_change(
     )
 
 
+def log_sns_change(
+    log_file: str,
+    account_id: str,
+    region: str,
+    event_name: str,
+    sns_data: Dict[str, Any]
+) -> None:
+    """
+    Log an SNS topic configuration change
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        region: AWS region
+        event_name: Type of change
+        sns_data: SNS topic configuration data
+    """
+    log_event(
+        log_file=log_file,
+        event_source="sns.amazonaws.com",
+        event_name=event_name,
+        account_id=account_id,
+        region=region,
+        response_elements=sns_data
+    )
+
+
 def log_permission_error(
     log_file: str,
     account_id: str,
