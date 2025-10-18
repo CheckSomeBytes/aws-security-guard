@@ -665,6 +665,8 @@ def main():
     parser.add_argument('--region', type=str, help='AWS region to test in (default: randomized per test)')
     parser.add_argument('--test-name', type=str, help='Test name (auto-generated if not provided)')
     parser.add_argument('--interactive', '-i', action='store_true', help='Interactive mode: press Enter to proceed instead of waiting')
+    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'guardduty', 'eventbridge', 'sqs', 'all'],
+                        default='all', help='Service to test (default: all)')
     args = parser.parse_args()
 
     # Generate random test name if not provided
@@ -689,27 +691,23 @@ def main():
 
     # Randomly select a region for each test (or use specified region)
     if args.region:
-        cloudtrail_region = args.region
-        guardduty_region = args.region
-        eventbridge_region = args.region
+        test_region = args.region
         print(f"\nAWS Security Watch Test Suite")
         print("=" * 50)
         if args.profile:
             print(f"Using AWS profile: {args.profile}")
         print(f"Test Name: {test_name}")
-        print(f"Region: {args.region} (all tests)")
+        print(f"Region: {args.region}")
+        print(f"Service: {args.service}")
     else:
-        cloudtrail_region = random.choice(available_regions)
-        guardduty_region = random.choice(available_regions)
-        eventbridge_region = random.choice(available_regions)
+        test_region = random.choice(available_regions)
         print(f"\nAWS Security Watch Test Suite")
         print("=" * 50)
         if args.profile:
             print(f"Using AWS profile: {args.profile}")
         print(f"Test Name: {test_name}")
-        print(f"CloudTrail Region: {cloudtrail_region}")
-        print(f"GuardDuty Region: {guardduty_region}")
-        print(f"EventBridge Region: {eventbridge_region}")
+        print(f"Region: {test_region} (randomized)")
+        print(f"Service: {args.service}")
 
     if args.interactive:
         print(f"Mode: Interactive (press Enter to proceed)")
@@ -718,11 +716,21 @@ def main():
     print("=" * 50)
     print()
 
-    # Run tests with randomly selected regions
-    test_cloudtrail(session, cloudtrail_region, test_name, args.interactive)
-    test_s3_monitoring(session, cloudtrail_region, test_name, args.interactive)
-    test_guardduty(session, guardduty_region, test_name, args.interactive)
-    test_eventbridge(session, eventbridge_region, test_name, args.interactive)
+    # Run tests based on service filter
+    if args.service in ['cloudtrail', 'all']:
+        test_cloudtrail(session, test_region, test_name, args.interactive)
+
+    if args.service in ['s3', 'all']:
+        test_s3_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['sqs', 'all']:
+        test_sqs_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['guardduty', 'all']:
+        test_guardduty(session, test_region, test_name, args.interactive)
+
+    if args.service in ['eventbridge', 'all']:
+        test_eventbridge(session, test_region, test_name, args.interactive)
 
     print("\n" + "=" * 50)
     print("=== All tests completed ===")
