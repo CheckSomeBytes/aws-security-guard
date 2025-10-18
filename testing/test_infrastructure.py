@@ -17,6 +17,9 @@ import string
 from typing import Dict, Any, List
 from botocore.exceptions import ClientError
 
+# Global configuration
+DELAY_SECONDS = 35  # 2 minutes - delay between test steps in non-interactive mode
+
 
 def create_s3_bucket(s3_client, bucket_name: str, region: str) -> str:
     """Create an S3 bucket for testing"""
@@ -128,8 +131,6 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
     bucket1_name = f"aws-security-watch-test-bucket1-{test_name}".lower()
     bucket2_name = f"aws-security-watch-test-bucket2-{test_name}".lower()
 
-    delay_seconds = 120  # 2 minutes
-
     try:
         # Create S3 buckets
         create_s3_bucket(s3, bucket1_name, region)
@@ -146,19 +147,19 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
         # Start logging
         cloudtrail.start_logging(Name=trail_name)
         print(f"Started logging for trail: {trail_name}")
-        wait_for_user(interactive, delay_seconds, "Trail created and logging started.")
+        wait_for_user(interactive, DELAY_SECONDS, "Trail created and logging started.")
 
         # Test 1: Stop logging
         print("\nTest 1: Stopping logging...")
         cloudtrail.stop_logging(Name=trail_name)
         print("✓ Logging stopped")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Restart logging for next test
         print("\nRestarting logging...")
         cloudtrail.start_logging(Name=trail_name)
         print("✓ Logging restarted")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 2: Change S3 destination
         print("\nTest 2: Changing S3 destination...")
@@ -167,7 +168,7 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
             S3BucketName=bucket2_name
         )
         print(f"✓ S3 destination changed to {bucket2_name}")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 3: Update event selectors (add S3 data events)
         print("\nTest 3: Updating event selectors to include S3 data events...")
@@ -187,7 +188,7 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
             ]
         )
         print("✓ Event selectors updated to include S3 data events")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 4: Delete trail
         print("\nTest 4: Deleting trail...")
@@ -216,7 +217,6 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
     detector_id = None
     created_detector = False  # Track if we created the detector
     filter_name = f"aws-security-watch-test-filter-{test_name}"
-    delay_seconds = 120  # 2 minutes
 
     try:
         # Check for existing detectors
@@ -236,7 +236,7 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
             created_detector = True
             print(f"✓ Created detector: {detector_id}")
 
-        wait_for_user(interactive, delay_seconds, "Detector ready.")
+        wait_for_user(interactive, DELAY_SECONDS, "Detector ready.")
 
         # Test 1: Create suppression rule
         print("\nTest 1: Creating suppression rule...")
@@ -255,7 +255,7 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
             }
         )
         print(f"✓ Suppression rule created: {filter_name}")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 2: Update suppression rule
         print("\nTest 2: Updating suppression rule...")
@@ -273,7 +273,7 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
             }
         )
         print("✓ Suppression rule updated")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 3: Delete suppression rule
         print("\nTest 3: Deleting suppression rule...")
@@ -282,7 +282,7 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
             FilterName=filter_name
         )
         print("✓ Suppression rule deleted")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 4: Suspend detector (only if we created it or it's already enabled)
         if created_detector:
@@ -292,14 +292,14 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
                 Enable=False
             )
             print("✓ Detector suspended")
-            wait_for_user(interactive, delay_seconds)
+            wait_for_user(interactive, DELAY_SECONDS)
 
             # Test 5: Delete detector
             print("\nTest 5: Deleting GuardDuty detector...")
             guardduty.delete_detector(DetectorId=detector_id)
             print("✓ Detector deleted")
             detector_id = None  # Set to None so cleanup doesn't try to delete again
-            wait_for_user(interactive, delay_seconds)
+            wait_for_user(interactive, DELAY_SECONDS)
 
     except Exception as e:
         print(f"Error in GuardDuty test: {str(e)}")
@@ -336,13 +336,11 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
     trail_name = f"aws-security-watch-test-trail-{test_name}"
     bucket_name = f"aws-security-watch-test-bucket-s3mon-{test_name}".lower()
 
-    delay_seconds = 120  # 2 minutes
-
     try:
         # Create S3 bucket
         print(f"Creating S3 bucket: {bucket_name}")
         create_s3_bucket(s3, bucket_name, region)
-        wait_for_user(interactive, delay_seconds, "S3 bucket created.")
+        wait_for_user(interactive, DELAY_SECONDS, "S3 bucket created.")
 
         # Create CloudTrail to link the bucket
         print(f"Creating CloudTrail: {trail_name}")
@@ -353,7 +351,7 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
         )
         cloudtrail.start_logging(Name=trail_name)
         print(f"✓ CloudTrail created and linked to S3 bucket")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 1: Add encryption to bucket
         print("\nTest 1: Adding bucket encryption...")
@@ -370,7 +368,7 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
             }
         )
         print("✓ Encryption added")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 2: Configure S3 event notification (we'll need a dummy SQS queue for this)
         # For now, we'll skip this in the basic test since it requires SQS setup
@@ -385,14 +383,14 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
                 Body=b'X' * 1000000  # 1MB each = 10MB total
             )
         print("✓ Uploaded 10 objects (10MB total)")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 4: Delete most objects to trigger size reduction >50%
         print("\nTest 4: Deleting 8 objects to trigger size reduction...")
         for i in range(8):
             s3.delete_object(Bucket=bucket_name, Key=f'test-object-{i}.txt')
         print("✓ Deleted 8 objects (should trigger >50% size reduction alert)")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 5: Change encryption settings
         print("\nTest 5: Changing encryption settings...")
@@ -409,7 +407,7 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
             }
         )
         print("✓ Encryption changed to KMS")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 6: Delete CloudTrail and bucket
         print("\nTest 6: Deleting CloudTrail and bucket...")
@@ -439,8 +437,6 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
     trail_name = f"aws-security-watch-test-trail-{test_name}"
     bucket_name = f"aws-security-watch-test-bucket-sqsmon-{test_name}".lower()
     queue_name = f"aws-security-watch-test-queue-{test_name}"
-
-    delay_seconds = 120  # 2 minutes
     queue_url = None
 
     try:
@@ -472,7 +468,7 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
         attrs = sqs.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['QueueArn'])
         queue_arn = attrs['Attributes']['QueueArn']
         print(f"✓ SQS queue created: {queue_name}")
-        wait_for_user(interactive, delay_seconds, "SQS queue created.")
+        wait_for_user(interactive, DELAY_SECONDS, "SQS queue created.")
 
         # Test 2: Configure S3 event notification to SQS
         print("\nTest 2: Configuring S3 event notification to SQS...")
@@ -512,7 +508,7 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
             }
         )
         print("✓ S3 event notification configured to SQS")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 3: Add encryption to queue
         print("\nTest 3: Adding encryption to SQS queue...")
@@ -524,7 +520,7 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
             }
         )
         print("✓ Encryption added to queue")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 4: Update queue policy
         print("\nTest 4: Updating queue access policy...")
@@ -555,13 +551,13 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
             Attributes={'Policy': json.dumps(updated_policy)}
         )
         print("✓ Queue policy updated")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 5: Delete queue
         print("\nTest 5: Deleting SQS queue...")
         sqs.delete_queue(QueueUrl=queue_url)
         print("✓ Queue deleted")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
     except Exception as e:
         print(f"Error in SQS monitoring test: {str(e)}")
@@ -596,7 +592,6 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
     trail_name = f"aws-security-watch-test-trail-{test_name}"
     topic_name = f"aws-security-watch-test-topic-{test_name}"
     topic_arn = None
-    delay_seconds = 120  # 2 minutes
 
     try:
         # Create S3 bucket for CloudTrail
@@ -608,7 +603,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             Name=trail_name,
             S3BucketName=bucket_name
         )
-        cloudtrail.start_logging(TrailName=trail_name)
+        cloudtrail.start_logging(Name=trail_name)
         print(f"Created CloudTrail trail: {trail_name}")
 
         # Test 1: Create SNS topic and configure as S3 event destination
@@ -661,7 +656,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             }
         )
         print(f"Configured S3 bucket to send notifications to SNS topic")
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect SNS topic creation")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect SNS topic creation")
 
         # Test 2: Create subscription
         print("\nTest 2: Add email subscription to SNS topic")
@@ -671,7 +666,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             Endpoint='test@example.com'
         )
         print(f"Added subscription (pending confirmation): {subscription_response['SubscriptionArn']}")
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect subscription creation")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect subscription creation")
 
         # Test 3: Update topic encryption
         print("\nTest 3: Enable encryption on SNS topic")
@@ -683,7 +678,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             AttributeValue='Test CloudTrail Notifications'
         )
         print(f"Updated SNS topic display name")
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect display name change")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect display name change")
 
         # Test 4: Update topic policy
         print("\nTest 4: Update SNS topic policy")
@@ -716,7 +711,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             AttributeValue=json.dumps(updated_policy)
         )
         print(f"Updated SNS topic policy")
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect policy change")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect policy change")
 
         # Test 5: Delete topic (should be detected as topic deletion)
         print("\nTest 5: Delete SNS topic")
@@ -726,13 +721,13 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             NotificationConfiguration={}
         )
         print(f"Removed S3 notification configuration")
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect notification removal")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect notification removal")
 
         # Now delete the topic
         sns_client.delete_topic(TopicArn=topic_arn)
         print(f"Deleted SNS topic: {topic_arn}")
         topic_arn = None  # Mark as deleted
-        wait_for_user(interactive, delay_seconds, f"Wait {delay_seconds}s for monitoring to detect topic deletion")
+        wait_for_user(interactive, DELAY_SECONDS, f"Wait {DELAY_SECONDS}s for monitoring to detect topic deletion")
 
         print("\n=== SNS Monitoring Tests Completed ===\n")
 
@@ -758,7 +753,7 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
             pass
 
         try:
-            cloudtrail.stop_logging(TrailName=trail_name)
+            cloudtrail.stop_logging(Name=trail_name)
             cloudtrail.delete_trail(Name=trail_name)
             print(f"Deleted CloudTrail trail: {trail_name}")
         except Exception as e:
@@ -776,7 +771,6 @@ def test_eventbridge(session: boto3.Session, region: str, test_name: str, intera
     events = session.client('events', region_name=region)
 
     rule_name = f"aws-security-watch-test-rule-{test_name}"
-    delay_seconds = 120  # 2 minutes
 
     try:
         # Test 1: Create rule
@@ -791,7 +785,7 @@ def test_eventbridge(session: boto3.Session, region: str, test_name: str, intera
             })
         )
         print(f"✓ EventBridge rule created: {rule_name}")
-        wait_for_user(interactive, delay_seconds, "Rule created.")
+        wait_for_user(interactive, DELAY_SECONDS, "Rule created.")
 
         # Test 2: Update rule (change state)
         print("\nTest 2: Disabling EventBridge rule...")
@@ -805,7 +799,7 @@ def test_eventbridge(session: boto3.Session, region: str, test_name: str, intera
             })
         )
         print("✓ Rule disabled")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 3: Update rule (change event pattern)
         print("\nTest 3: Updating EventBridge rule pattern...")
@@ -819,7 +813,7 @@ def test_eventbridge(session: boto3.Session, region: str, test_name: str, intera
             })
         )
         print("✓ Rule pattern updated and re-enabled")
-        wait_for_user(interactive, delay_seconds)
+        wait_for_user(interactive, DELAY_SECONDS)
 
         # Test 4: Delete rule
         print("\nTest 4: Deleting EventBridge rule...")
