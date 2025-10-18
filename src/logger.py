@@ -141,6 +141,33 @@ def log_eventbridge_change(
     )
 
 
+def log_s3_change(
+    log_file: str,
+    account_id: str,
+    region: str,
+    event_name: str,
+    s3_data: Dict[str, Any]
+) -> None:
+    """
+    Log an S3 bucket configuration change
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        region: AWS region
+        event_name: Type of change
+        s3_data: S3 bucket configuration data
+    """
+    log_event(
+        log_file=log_file,
+        event_source="s3.amazonaws.com",
+        event_name=event_name,
+        account_id=account_id,
+        region=region,
+        response_elements=s3_data
+    )
+
+
 def log_permission_error(
     log_file: str,
     account_id: str,

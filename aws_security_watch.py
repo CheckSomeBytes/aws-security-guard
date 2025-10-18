@@ -10,7 +10,7 @@ Monitors AWS security service configurations and logs changes:
 
 import time
 import boto3
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 import credentials
 import state_manager
 import logger
-from monitors import cloudtrail_monitor, guardduty_monitor, eventbridge_monitor
+from monitors import cloudtrail_monitor, guardduty_monitor, eventbridge_monitor, s3_monitor
 
 
 def get_all_regions(session: boto3.Session) -> List[str]:
@@ -48,13 +48,14 @@ def monitor_service_in_region(
     state_directory: str,
     log_file: str,
     is_first_run: bool,
-    log_function
+    log_function,
+    state_file_data: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Monitor a single service in a single region
 
     Args:
-        service_name: Name of the service (cloudtrail, guardduty, eventbridge)
+        service_name: Name of the service (cloudtrail, guardduty, eventbridge, s3, etc.)
         monitor_module: The monitoring module to use
         session: boto3 session with appropriate credentials
         account_id: AWS account ID
@@ -63,12 +64,20 @@ def monitor_service_in_region(
         log_file: Path to log file
         is_first_run: Whether this is the first run for this account
         log_function: Logging function for this service
+        state_file_data: Complete state file data for resource discovery
 
     Returns:
         Dictionary with service name, status, current state, and any changes
     """
     try:
-        current_state = monitor_module.get_current_state(session, region)
+        # Check if monitor supports state_file_data parameter
+        import inspect
+        sig = inspect.signature(monitor_module.get_current_state)
+        if 'state_file_data' in sig.parameters:
+            current_state = monitor_module.get_current_state(session, region, state_file_data)
+        else:
+            current_state = monitor_module.get_current_state(session, region)
+
         previous_state = state_manager.get_service_state(
             state_directory, account_id, service_name, region
         )
@@ -84,8 +93,13 @@ def monitor_service_in_region(
                     data_key = 'trail_data'
                 elif service_name == 'guardduty':
                     data_key = 'guardduty_data'
-                else:  # eventbridge
+                elif service_name == 'eventbridge':
                     data_key = 'rule_data'
+                elif service_name == 's3':
+                    data_key = 's3_data'
+                else:
+                    # Default to service_name + '_data' for future services
+                    data_key = f'{service_name}_data'
 
                 log_function(
                     log_file,
@@ -137,16 +151,20 @@ def monitor_account_region(
     Returns:
         Dictionary with region and collected service states
     """
+    # Load current state file for resource discovery
+    state_file_data = state_manager.load_state(state_directory, account_id) or {'regions': {}}
+
     # Define services to monitor
     services = [
         ('cloudtrail', cloudtrail_monitor, logger.log_cloudtrail_change),
         ('guardduty', guardduty_monitor, logger.log_guardduty_change),
-        ('eventbridge', eventbridge_monitor, logger.log_eventbridge_change)
+        ('eventbridge', eventbridge_monitor, logger.log_eventbridge_change),
+        ('s3', s3_monitor, logger.log_s3_change)
     ]
 
     # Monitor all services in parallel
     service_results = []
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
         for service_name, monitor_module, log_function in services:
             future = executor.submit(
@@ -159,7 +177,8 @@ def monitor_account_region(
                 state_directory,
                 log_file,
                 is_first_run,
-                log_function
+                log_function,
+                state_file_data
             )
             futures.append(future)
 
