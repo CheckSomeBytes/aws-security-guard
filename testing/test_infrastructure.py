@@ -429,6 +429,159 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
         delete_s3_bucket(s3, bucket_name)
 
 
+def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
+    """Test SQS queue monitoring"""
+    print(f"\n=== Testing SQS Monitoring in {region} ===")
+    cloudtrail = session.client('cloudtrail', region_name=region)
+    s3 = session.client('s3', region_name=region)
+    sqs = session.client('sqs', region_name=region)
+
+    trail_name = f"aws-security-watch-test-trail-{test_name}"
+    bucket_name = f"aws-security-watch-test-bucket-sqsmon-{test_name}".lower()
+    queue_name = f"aws-security-watch-test-queue-{test_name}"
+
+    delay_seconds = 120  # 2 minutes
+    queue_url = None
+
+    try:
+        # Create S3 bucket
+        print(f"Creating S3 bucket: {bucket_name}")
+        create_s3_bucket(s3, bucket_name, region)
+
+        # Create CloudTrail to link the bucket
+        print(f"Creating CloudTrail: {trail_name}")
+        cloudtrail.create_trail(
+            Name=trail_name,
+            S3BucketName=bucket_name,
+            IsMultiRegionTrail=False
+        )
+        cloudtrail.start_logging(Name=trail_name)
+        print(f"✓ CloudTrail created and linked to S3 bucket")
+
+        # Test 1: Create SQS queue
+        print("\nTest 1: Creating SQS queue...")
+        response = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={
+                'MessageRetentionPeriod': '345600'  # 4 days
+            }
+        )
+        queue_url = response['QueueUrl']
+
+        # Get queue ARN
+        attrs = sqs.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['QueueArn'])
+        queue_arn = attrs['Attributes']['QueueArn']
+        print(f"✓ SQS queue created: {queue_name}")
+        wait_for_user(interactive, delay_seconds, "SQS queue created.")
+
+        # Test 2: Configure S3 event notification to SQS
+        print("\nTest 2: Configuring S3 event notification to SQS...")
+        # Add permission to SQS to allow S3 to send messages
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "sqs:SendMessage",
+                    "Resource": queue_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                }
+            ]
+        }
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={'Policy': json.dumps(policy)}
+        )
+
+        # Configure S3 notification
+        s3.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration={
+                'QueueConfigurations': [
+                    {
+                        'Id': 'test-notification',
+                        'QueueArn': queue_arn,
+                        'Events': ['s3:ObjectCreated:*']
+                    }
+                ]
+            }
+        )
+        print("✓ S3 event notification configured to SQS")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 3: Add encryption to queue
+        print("\nTest 3: Adding encryption to SQS queue...")
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={
+                'KmsMasterKeyId': 'alias/aws/sqs',
+                'KmsDataKeyReusePeriodSeconds': '300'
+            }
+        )
+        print("✓ Encryption added to queue")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 4: Update queue policy
+        print("\nTest 4: Updating queue access policy...")
+        updated_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "s3.amazonaws.com"},
+                    "Action": "sqs:SendMessage",
+                    "Resource": queue_arn,
+                    "Condition": {
+                        "ArnLike": {
+                            "aws:SourceArn": f"arn:aws:s3:::{bucket_name}"
+                        }
+                    }
+                },
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Action": "sqs:GetQueueAttributes",
+                    "Resource": queue_arn
+                }
+            ]
+        }
+        sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={'Policy': json.dumps(updated_policy)}
+        )
+        print("✓ Queue policy updated")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 5: Delete queue
+        print("\nTest 5: Deleting SQS queue...")
+        sqs.delete_queue(QueueUrl=queue_url)
+        print("✓ Queue deleted")
+        wait_for_user(interactive, delay_seconds)
+
+    except Exception as e:
+        print(f"Error in SQS monitoring test: {str(e)}")
+    finally:
+        # Cleanup
+        print("Cleaning up SQS monitoring test resources...")
+        if queue_url:
+            try:
+                sqs.delete_queue(QueueUrl=queue_url)
+            except:
+                pass
+
+        try:
+            cloudtrail.delete_trail(Name=trail_name)
+        except:
+            pass
+
+        delete_s3_bucket(s3, bucket_name)
+
+
 def test_eventbridge(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
     """Test EventBridge monitoring"""
     print(f"\n=== Testing EventBridge in {region} ===")
@@ -512,6 +665,8 @@ def main():
     parser.add_argument('--region', type=str, help='AWS region to test in (default: randomized per test)')
     parser.add_argument('--test-name', type=str, help='Test name (auto-generated if not provided)')
     parser.add_argument('--interactive', '-i', action='store_true', help='Interactive mode: press Enter to proceed instead of waiting')
+    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'guardduty', 'eventbridge', 'sqs', 'all'],
+                        default='all', help='Service to test (default: all)')
     args = parser.parse_args()
 
     # Generate random test name if not provided
@@ -536,27 +691,23 @@ def main():
 
     # Randomly select a region for each test (or use specified region)
     if args.region:
-        cloudtrail_region = args.region
-        guardduty_region = args.region
-        eventbridge_region = args.region
+        test_region = args.region
         print(f"\nAWS Security Watch Test Suite")
         print("=" * 50)
         if args.profile:
             print(f"Using AWS profile: {args.profile}")
         print(f"Test Name: {test_name}")
-        print(f"Region: {args.region} (all tests)")
+        print(f"Region: {args.region}")
+        print(f"Service: {args.service}")
     else:
-        cloudtrail_region = random.choice(available_regions)
-        guardduty_region = random.choice(available_regions)
-        eventbridge_region = random.choice(available_regions)
+        test_region = random.choice(available_regions)
         print(f"\nAWS Security Watch Test Suite")
         print("=" * 50)
         if args.profile:
             print(f"Using AWS profile: {args.profile}")
         print(f"Test Name: {test_name}")
-        print(f"CloudTrail Region: {cloudtrail_region}")
-        print(f"GuardDuty Region: {guardduty_region}")
-        print(f"EventBridge Region: {eventbridge_region}")
+        print(f"Region: {test_region} (randomized)")
+        print(f"Service: {args.service}")
 
     if args.interactive:
         print(f"Mode: Interactive (press Enter to proceed)")
@@ -565,11 +716,21 @@ def main():
     print("=" * 50)
     print()
 
-    # Run tests with randomly selected regions
-    test_cloudtrail(session, cloudtrail_region, test_name, args.interactive)
-    test_s3_monitoring(session, cloudtrail_region, test_name, args.interactive)
-    test_guardduty(session, guardduty_region, test_name, args.interactive)
-    test_eventbridge(session, eventbridge_region, test_name, args.interactive)
+    # Run tests based on service filter
+    if args.service in ['cloudtrail', 'all']:
+        test_cloudtrail(session, test_region, test_name, args.interactive)
+
+    if args.service in ['s3', 'all']:
+        test_s3_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['sqs', 'all']:
+        test_sqs_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['guardduty', 'all']:
+        test_guardduty(session, test_region, test_name, args.interactive)
+
+    if args.service in ['eventbridge', 'all']:
+        test_eventbridge(session, test_region, test_name, args.interactive)
 
     print("\n" + "=" * 50)
     print("=== All tests completed ===")

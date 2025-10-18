@@ -65,6 +65,24 @@
         "s3:ListBucket"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "SQSReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl",
+        "sqs:ListQueues"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "LambdaReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:ListEventSourceMappings"
+      ],
+      "Resource": "*"
     }
   ]
 }

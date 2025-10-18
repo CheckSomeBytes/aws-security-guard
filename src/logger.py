@@ -168,6 +168,33 @@ def log_s3_change(
     )
 
 
+def log_sqs_change(
+    log_file: str,
+    account_id: str,
+    region: str,
+    event_name: str,
+    sqs_data: Dict[str, Any]
+) -> None:
+    """
+    Log an SQS queue configuration change
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        region: AWS region
+        event_name: Type of change
+        sqs_data: SQS queue configuration data
+    """
+    log_event(
+        log_file=log_file,
+        event_source="sqs.amazonaws.com",
+        event_name=event_name,
+        account_id=account_id,
+        region=region,
+        response_elements=sqs_data
+    )
+
+
 def log_permission_error(
     log_file: str,
     account_id: str,
