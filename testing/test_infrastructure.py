@@ -322,6 +322,108 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
                 print(f"Preserved existing detector: {detector_id}")
 
 
+def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
+    """Test S3 bucket monitoring"""
+    print(f"\n=== Testing S3 Monitoring in {region} ===")
+    cloudtrail = session.client('cloudtrail', region_name=region)
+    s3 = session.client('s3', region_name=region)
+
+    trail_name = f"aws-security-watch-test-trail-{test_name}"
+    bucket_name = f"aws-security-watch-test-bucket-s3mon-{test_name}".lower()
+
+    delay_seconds = 120  # 2 minutes
+
+    try:
+        # Create S3 bucket
+        print(f"Creating S3 bucket: {bucket_name}")
+        create_s3_bucket(s3, bucket_name, region)
+        wait_for_user(interactive, delay_seconds, "S3 bucket created.")
+
+        # Create CloudTrail to link the bucket
+        print(f"Creating CloudTrail: {trail_name}")
+        cloudtrail.create_trail(
+            Name=trail_name,
+            S3BucketName=bucket_name,
+            IsMultiRegionTrail=False
+        )
+        cloudtrail.start_logging(Name=trail_name)
+        print(f"✓ CloudTrail created and linked to S3 bucket")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 1: Add encryption to bucket
+        print("\nTest 1: Adding bucket encryption...")
+        s3.put_bucket_encryption(
+            Bucket=bucket_name,
+            ServerSideEncryptionConfiguration={
+                'Rules': [
+                    {
+                        'ApplyServerSideEncryptionByDefault': {
+                            'SSEAlgorithm': 'AES256'
+                        }
+                    }
+                ]
+            }
+        )
+        print("✓ Encryption added")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 2: Configure S3 event notification (we'll need a dummy SQS queue for this)
+        # For now, we'll skip this in the basic test since it requires SQS setup
+        # This will be tested more thoroughly in the comprehensive ecosystem test
+
+        # Test 3: Upload some objects to create bucket size
+        print("\nTest 3: Uploading objects to bucket...")
+        for i in range(10):
+            s3.put_object(
+                Bucket=bucket_name,
+                Key=f'test-object-{i}.txt',
+                Body=b'X' * 1000000  # 1MB each = 10MB total
+            )
+        print("✓ Uploaded 10 objects (10MB total)")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 4: Delete most objects to trigger size reduction >50%
+        print("\nTest 4: Deleting 8 objects to trigger size reduction...")
+        for i in range(8):
+            s3.delete_object(Bucket=bucket_name, Key=f'test-object-{i}.txt')
+        print("✓ Deleted 8 objects (should trigger >50% size reduction alert)")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 5: Change encryption settings
+        print("\nTest 5: Changing encryption settings...")
+        s3.put_bucket_encryption(
+            Bucket=bucket_name,
+            ServerSideEncryptionConfiguration={
+                'Rules': [
+                    {
+                        'ApplyServerSideEncryptionByDefault': {
+                            'SSEAlgorithm': 'aws:kms'
+                        }
+                    }
+                ]
+            }
+        )
+        print("✓ Encryption changed to KMS")
+        wait_for_user(interactive, delay_seconds)
+
+        # Test 6: Delete CloudTrail and bucket
+        print("\nTest 6: Deleting CloudTrail and bucket...")
+        cloudtrail.delete_trail(Name=trail_name)
+        print("✓ CloudTrail deleted")
+
+    except Exception as e:
+        print(f"Error in S3 monitoring test: {str(e)}")
+    finally:
+        # Cleanup
+        print("Cleaning up S3 monitoring test resources...")
+        try:
+            cloudtrail.delete_trail(Name=trail_name)
+        except:
+            pass
+
+        delete_s3_bucket(s3, bucket_name)
+
+
 def test_eventbridge(session: boto3.Session, region: str, test_name: str, interactive: bool = False) -> None:
     """Test EventBridge monitoring"""
     print(f"\n=== Testing EventBridge in {region} ===")
@@ -460,6 +562,7 @@ def main():
 
     # Run tests with randomly selected regions
     test_cloudtrail(session, cloudtrail_region, test_name, args.interactive)
+    test_s3_monitoring(session, cloudtrail_region, test_name, args.interactive)
     test_guardduty(session, guardduty_region, test_name, args.interactive)
     test_eventbridge(session, eventbridge_region, test_name, args.interactive)
 
