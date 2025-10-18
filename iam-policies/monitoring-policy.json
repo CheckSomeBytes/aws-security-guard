@@ -60,9 +60,7 @@
       "Action": [
         "s3:GetBucketLocation",
         "s3:GetBucketVersioning",
-        "s3:GetBucketEncryption",
         "s3:GetEncryptionConfiguration",
-        "s3:GetBucketNotificationConfiguration",
         "s3:GetBucketNotification",
         "s3:ListBucket"
       ],
