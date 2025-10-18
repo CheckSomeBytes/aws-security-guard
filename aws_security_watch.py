@@ -10,7 +10,7 @@ Monitors AWS security service configurations and logs changes:
 
 import time
 import boto3
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
