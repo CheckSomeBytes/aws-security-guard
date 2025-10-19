@@ -384,22 +384,6 @@ def detect_changes(
                     }
                 })
 
-        # Check for description changes
-        prev_description = previous_role.get('description', '')
-        curr_description = current_role.get('description', '')
-
-        if prev_description != curr_description:
-            changes.append({
-                'event_name': 'UpdateRoleDescription',
-                'iam_data': {
-                    'roleArn': role_arn,
-                    'roleName': current_role.get('role_name'),
-                    'sources': current_role.get('sources', []),
-                    'previousDescription': prev_description,
-                    'currentDescription': curr_description
-                }
-            })
-
         # Check for max session duration changes
         prev_max_session = previous_role.get('max_session_duration')
         curr_max_session = current_role.get('max_session_duration')
