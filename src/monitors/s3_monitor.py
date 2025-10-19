@@ -7,7 +7,7 @@ Monitors S3 bucket configuration changes for buckets used as CloudTrail destinat
 - Event notification prefix/suffix changes
 - Event notification event type changes
 - Event notification destination changes
-- Encryption setting changes
+- Encryption being added or modified (does not track encryption removal)
 """
 
 import boto3
@@ -34,7 +34,11 @@ def _get_bucket_size(s3_client, bucket_name: str) -> int:
                 for obj in page['Contents']:
                     total_size += obj.get('Size', 0)
         return total_size
-    except ClientError:
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        # Re-raise NoSuchBucket so caller can handle it
+        if error_code == 'NoSuchBucket':
+            raise
         return 0
 
 
@@ -54,7 +58,11 @@ def _get_bucket_region(s3_client, bucket_name: str) -> str:
         location = response.get('LocationConstraint')
         # None means us-east-1
         return location if location else 'us-east-1'
-    except ClientError:
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        # Re-raise NoSuchBucket so caller can handle it
+        if error_code == 'NoSuchBucket':
+            raise
         return 'unknown'
 
 
@@ -177,7 +185,11 @@ def get_current_state(
             try:
                 versioning_response = s3_client.get_bucket_versioning(Bucket=bucket_name)
                 versioning_status = versioning_response.get('Status', 'Disabled')
-            except ClientError:
+            except ClientError as e:
+                error_code = e.response['Error']['Code']
+                # If bucket doesn't exist, skip it (will be handled by outer exception handler)
+                if error_code == 'NoSuchBucket':
+                    raise
                 versioning_status = 'Unknown'
 
             # Get encryption configuration
@@ -192,8 +204,12 @@ def get_current_state(
                         'KMSMasterKeyID': default_encryption.get('KMSMasterKeyID', '')
                     }
             except ClientError as e:
+                error_code = e.response['Error']['Code']
+                # If bucket doesn't exist, skip it (will be handled by outer exception handler)
+                if error_code == 'NoSuchBucket':
+                    raise
                 # Bucket may not have encryption configured
-                if e.response['Error']['Code'] != 'ServerSideEncryptionConfigurationNotFoundError':
+                if error_code != 'ServerSideEncryptionConfigurationNotFoundError':
                     print(f"Warning: Could not get encryption for bucket {bucket_name}: {str(e)}")
 
             # Get event notification configuration
@@ -202,7 +218,10 @@ def get_current_state(
                 notification_response = s3_client.get_bucket_notification_configuration(Bucket=bucket_name)
                 event_notifications = _parse_event_notifications(notification_response)
             except ClientError as e:
-                print(f"Warning: Could not get notifications for bucket {bucket_name}: {str(e)}")
+                error_code = e.response['Error']['Code']
+                # Don't warn for NoSuchBucket - it means bucket was deleted (will be caught by deletion detection)
+                if error_code not in ['NoSuchBucket']:
+                    print(f"Warning: Could not get notifications for bucket {bucket_name}: {str(e)}")
 
             # Build bucket state
             buckets[bucket_name] = {
@@ -218,7 +237,10 @@ def get_current_state(
 
         except ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['AccessDenied', 'NoSuchBucket', 'AllAccessDisabled']:
+            if error_code == 'NoSuchBucket':
+                # Bucket was deleted - skip it silently (deletion will be detected by change detection)
+                continue
+            elif error_code in ['AccessDenied', 'AllAccessDisabled']:
                 # Cross-account bucket or inaccessible bucket
                 buckets[bucket_name] = {
                     'arn': f'arn:aws:s3:::{bucket_name}',
@@ -300,11 +322,23 @@ def detect_changes(
                     }
                 })
 
-        # Check for encryption changes
+        # Check for encryption changes - track when encryption is ADDED or MODIFIED
         prev_encryption = previous_bucket.get('encryption', {})
         curr_encryption = current_bucket.get('encryption', {})
 
-        if prev_encryption != curr_encryption:
+        # Log when encryption is added (previous was empty, current has encryption)
+        if not prev_encryption and curr_encryption:
+            changes.append({
+                'event_name': 'AddBucketEncryption',
+                's3_data': {
+                    'bucketName': bucket_name,
+                    'bucketArn': current_bucket.get('arn'),
+                    'sourceTrailArn': current_bucket.get('source_trail_arn'),
+                    'addedEncryption': curr_encryption
+                }
+            })
+        # Log when encryption is modified (both had encryption, but different settings)
+        elif prev_encryption and curr_encryption and prev_encryption != curr_encryption:
             changes.append({
                 'event_name': 'UpdateBucketEncryption',
                 's3_data': {
@@ -315,6 +349,7 @@ def detect_changes(
                     'currentEncryption': curr_encryption
                 }
             })
+        # Note: We do NOT log when encryption is removed (prev_encryption and not curr_encryption)
 
         # Check for event notification changes
         prev_notifications = {n['id']: n for n in previous_bucket.get('event_notifications', [])}

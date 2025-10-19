@@ -5,9 +5,13 @@ Monitors SNS topic configuration changes for topics used in the CloudTrail ecosy
 - Topics used as S3 event notification destinations
 - Topics subscribed to by SQS queues
 - Topic deletion
-- Subscription changes
+- Subscription changes (delete and update only, not creation)
 - Access policy changes
-- Encryption setting changes
+- Encryption being added or modified (does not track encryption removal)
+
+Note: Does NOT monitor:
+- Display name changes
+- Subscription creation
 """
 
 import boto3
@@ -131,7 +135,6 @@ def get_current_state(
                     'topic_name': topic_name,
                     'region': region,
                     'sources': sources,
-                    'display_name': attributes.get('DisplayName', ''),
                     'encryption': encryption,
                     'access_policy': access_policy,
                     'subscriptions': subscriptions,
@@ -211,11 +214,23 @@ def detect_changes(
         if not current_topic.get('accessible', True):
             continue
 
-        # Check for encryption changes
+        # Check for encryption changes - track when encryption is ADDED or MODIFIED
         prev_encryption = previous_topic.get('encryption', {})
         curr_encryption = current_topic.get('encryption', {})
 
-        if prev_encryption != curr_encryption:
+        # Log when encryption is added (previous was empty, current has encryption)
+        if not prev_encryption and curr_encryption:
+            changes.append({
+                'event_name': 'AddTopicEncryption',
+                'sns_data': {
+                    'topicArn': topic_arn,
+                    'topicName': current_topic.get('topic_name'),
+                    'sources': current_topic.get('sources', []),
+                    'addedEncryption': curr_encryption
+                }
+            })
+        # Log when encryption is modified (both had encryption, but different settings)
+        elif prev_encryption and curr_encryption and prev_encryption != curr_encryption:
             changes.append({
                 'event_name': 'UpdateTopicEncryption',
                 'sns_data': {
@@ -226,6 +241,7 @@ def detect_changes(
                     'currentEncryption': curr_encryption
                 }
             })
+        # Note: We do NOT log when encryption is removed (prev_encryption and not curr_encryption)
 
         # Check for access policy changes
         prev_policy = previous_topic.get('access_policy', {})
@@ -261,19 +277,7 @@ def detect_changes(
                 }
             })
 
-        # Detect added subscriptions
-        added_sub_arns = set(curr_subs.keys()) - set(prev_subs.keys())
-        if added_sub_arns:
-            added_subs = [curr_subs[arn] for arn in added_sub_arns]
-            changes.append({
-                'event_name': 'CreateTopicSubscription',
-                'sns_data': {
-                    'topicArn': topic_arn,
-                    'topicName': current_topic.get('topic_name'),
-                    'sources': current_topic.get('sources', []),
-                    'addedSubscriptions': added_subs
-                }
-            })
+        # Note: We do not monitor added subscriptions (CreateTopicSubscription)
 
         # Detect modified subscriptions (same ARN but different attributes)
         for sub_arn in set(prev_subs.keys()) & set(curr_subs.keys()):
@@ -290,20 +294,6 @@ def detect_changes(
                     }
                 })
 
-        # Check for display name changes
-        prev_display_name = previous_topic.get('display_name', '')
-        curr_display_name = current_topic.get('display_name', '')
-
-        if prev_display_name != curr_display_name:
-            changes.append({
-                'event_name': 'UpdateTopicDisplayName',
-                'sns_data': {
-                    'topicArn': topic_arn,
-                    'topicName': current_topic.get('topic_name'),
-                    'sources': current_topic.get('sources', []),
-                    'previousDisplayName': prev_display_name,
-                    'currentDisplayName': curr_display_name
-                }
-            })
+        # Note: We do not monitor display name changes (UpdateTopicDisplayName)
 
     return changes
