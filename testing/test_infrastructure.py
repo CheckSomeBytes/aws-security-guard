@@ -1184,15 +1184,26 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
             cloudtrail = session.client('cloudtrail', region_name=region_name)
             response = cloudtrail.list_trails()
             for trail_info in response.get('Trails', []):
-                trail_name = trail_info['Name']
+                # Name field can be either trail name or ARN (if trail is in different region)
+                # TrailARN is always the full ARN
+                trail_arn = trail_info.get('TrailARN', trail_info['Name'])
+
+                # Extract trail name from ARN for display and filtering
+                if trail_arn.startswith('arn:aws:cloudtrail:'):
+                    trail_name = trail_arn.split('/')[-1]
+                else:
+                    trail_name = trail_arn
+
                 if 'aws-security-watch-test' in trail_name.lower():
                     try:
-                        # Stop logging first
+                        # Stop logging first (use ARN for cross-region trails)
                         try:
-                            cloudtrail.stop_logging(Name=trail_name)
+                            cloudtrail.stop_logging(Name=trail_arn)
                         except:
                             pass
-                        cloudtrail.delete_trail(Name=trail_name)
+
+                        # Delete trail (use ARN to handle cross-region trails)
+                        cloudtrail.delete_trail(Name=trail_arn)
                         print(f"✓ Deleted CloudTrail trail: {trail_name}")
                         total_cleaned['cloudtrail_trails'] += 1
                     except Exception as e:
