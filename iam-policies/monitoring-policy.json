@@ -93,6 +93,18 @@
         "sns:ListSubscriptionsByTopic"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "IAMReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRolePolicies",
+        "iam:GetRolePolicy",
+        "iam:ListRoleTags"
+      ],
+      "Resource": "*"
     }
   ]
 }
