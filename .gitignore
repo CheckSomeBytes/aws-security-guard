@@ -31,3 +31,6 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Generated visualization files
+state_diagram.*
