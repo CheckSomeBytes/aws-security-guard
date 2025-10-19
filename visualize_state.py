@@ -685,6 +685,10 @@ class StateVisualizer:
         self.graph.format = 'svg'
         svg_data = self.graph.pipe(format='svg').decode('utf-8')
 
+        # Get current timestamp for auto-reload detection
+        import time
+        generation_timestamp = int(time.time() * 1000)  # milliseconds
+
         # Create interactive HTML wrapper
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -784,6 +788,28 @@ class StateVisualizer:
         .fullscreen-btn:hover {{
             background: #005a94;
         }}
+        .watch-indicator {{
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 200, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 9999;
+            display: none;
+        }}
+        .watch-indicator.active {{
+            display: block;
+            animation: pulse 2s infinite;
+        }}
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.6; }}
+        }}
     </style>
 </head>
 <body>
@@ -807,12 +833,14 @@ class StateVisualizer:
         </div>
     </div>
     <div class="tooltip" id="tooltip"></div>
+    <div class="watch-indicator" id="watchIndicator">👁️ Live Update</div>
 
     <script>
         let scale = 1;
         const svgContainer = document.getElementById('svgContainer');
         const svg = svgContainer.querySelector('svg');
         const tooltip = document.getElementById('tooltip');
+        const watchIndicator = document.getElementById('watchIndicator');
 
         // Zoom controls
         function zoomIn() {{
@@ -888,6 +916,57 @@ class StateVisualizer:
                 }}
             }}
         }});
+
+        // Auto-reload when file changes (for watch mode)
+        const GENERATION_TIMESTAMP = {generation_timestamp};
+        const RELOAD_CHECK_FILE = '{output_file}.timestamp.json';
+
+        function checkForUpdates() {{
+            // Try to fetch a timestamp file to check for updates
+            fetch(RELOAD_CHECK_FILE + '?t=' + Date.now(), {{ cache: 'no-cache' }})
+                .then(response => response.json())
+                .then(data => {{
+                    // Show watch indicator when successfully checking for updates
+                    watchIndicator.classList.add('active');
+
+                    if (data.timestamp && data.timestamp > GENERATION_TIMESTAMP) {{
+                        console.log('Visualization updated, reloading...');
+                        // Save current scroll position and zoom
+                        const scrollX = svgContainer.scrollLeft;
+                        const scrollY = svgContainer.scrollTop;
+                        sessionStorage.setItem('scrollX', scrollX);
+                        sessionStorage.setItem('scrollY', scrollY);
+                        sessionStorage.setItem('scale', scale);
+                        location.reload();
+                    }}
+                }})
+                .catch(err => {{
+                    // Hide watch indicator if timestamp file not found
+                    watchIndicator.classList.remove('active');
+                }});
+        }}
+
+        // Restore scroll position and zoom after reload
+        window.addEventListener('load', () => {{
+            const savedScrollX = sessionStorage.getItem('scrollX');
+            const savedScrollY = sessionStorage.getItem('scrollY');
+            const savedScale = sessionStorage.getItem('scale');
+
+            if (savedScrollX !== null) {{
+                svgContainer.scrollLeft = parseInt(savedScrollX);
+            }}
+            if (savedScrollY !== null) {{
+                svgContainer.scrollTop = parseInt(savedScrollY);
+            }}
+            if (savedScale !== null) {{
+                scale = parseFloat(savedScale);
+                svg.style.transform = `scale(${{scale}})`;
+                svg.style.transformOrigin = 'top left';
+            }}
+        }});
+
+        // Check for updates every 2 seconds (only works when served via HTTP)
+        setInterval(checkForUpdates, 2000);
     </script>
 </body>
 </html>"""
@@ -896,6 +975,12 @@ class StateVisualizer:
         html_path = f"{output_file}.html"
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
+
+        # Write timestamp file for auto-reload detection
+        timestamp_path = f"{output_file}.timestamp.json"
+        import json
+        with open(timestamp_path, 'w') as f:
+            json.dump({'timestamp': generation_timestamp}, f)
 
         print(f"✓ Interactive visualization generated: {html_path}")
         return html_path
