@@ -16,9 +16,48 @@ from botocore.exceptions import ClientError
 import json
 
 
+def _normalize_policy_element(element: Any) -> Any:
+    """
+    Recursively normalize a policy element for comparison
+
+    Handles:
+    - Sorting lists/arrays
+    - Sorting dictionary keys
+    - Recursive normalization of nested structures
+
+    Args:
+        element: Policy element to normalize (dict, list, or primitive)
+
+    Returns:
+        Normalized element
+    """
+    if isinstance(element, dict):
+        # Recursively normalize dictionary values and sort by keys
+        return {k: _normalize_policy_element(v) for k, v in sorted(element.items())}
+    elif isinstance(element, list):
+        # Sort lists for consistent comparison
+        # Convert to JSON string for sorting if elements are complex
+        if element and isinstance(element[0], (dict, list)):
+            return sorted(
+                [_normalize_policy_element(item) for item in element],
+                key=lambda x: json.dumps(x, sort_keys=True)
+            )
+        else:
+            # Simple primitives can be sorted directly
+            return sorted([_normalize_policy_element(item) for item in element])
+    else:
+        # Return primitives as-is
+        return element
+
+
 def _normalize_policy_document(policy_doc: Dict[str, Any]) -> Dict[str, Any]:
     """
     Normalize a policy document for comparison
+
+    This performs deep normalization to handle:
+    - Array ordering (e.g., ["a", "b"] vs ["b", "a"])
+    - Dict key ordering (e.g., {"AWS": ..., "Service": ...} vs {"Service": ..., "AWS": ...})
+    - Nested structure ordering
 
     Args:
         policy_doc: Policy document dictionary
@@ -26,17 +65,7 @@ def _normalize_policy_document(policy_doc: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Normalized policy document
     """
-    # Sort statements for consistent comparison
-    if 'Statement' in policy_doc and isinstance(policy_doc['Statement'], list):
-        # Create a copy to avoid modifying the original
-        normalized = policy_doc.copy()
-        # Sort statements by converting to string (simple approach)
-        normalized['Statement'] = sorted(
-            policy_doc['Statement'],
-            key=lambda x: json.dumps(x, sort_keys=True)
-        )
-        return normalized
-    return policy_doc
+    return _normalize_policy_element(policy_doc)
 
 
 def get_current_state(
