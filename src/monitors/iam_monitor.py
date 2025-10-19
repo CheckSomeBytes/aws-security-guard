@@ -3,10 +3,11 @@ IAM Monitoring Module
 
 Monitors IAM role configuration changes for roles used in the CloudTrail ecosystem:
 - Roles used by Lambda functions
-- Roles referenced in other services
+- Service roles with monitored service principals (Lambda, S3, SNS, SQS, CloudTrail, etc.)
 - Trust policy changes
 - Attached managed policy changes
 - Inline policy changes
+- Role description and max session duration changes
 """
 
 import boto3
@@ -69,6 +70,17 @@ def get_current_state(
     role_arns: Set[str] = set()
     role_sources: Dict[str, List[Dict[str, str]]] = {}  # Map ARN to source list
 
+    # Define monitored service principals
+    MONITORED_SERVICES = {
+        'lambda.amazonaws.com': 'Lambda',
+        's3.amazonaws.com': 'S3',
+        'sns.amazonaws.com': 'SNS',
+        'sqs.amazonaws.com': 'SQS',
+        'cloudtrail.amazonaws.com': 'CloudTrail',
+        'events.amazonaws.com': 'EventBridge',
+        'guardduty.amazonaws.com': 'GuardDuty'
+    }
+
     # Scan all regions for Lambda functions with roles
     for region_name, region_data in state_file_data.get('regions', {}).items():
         # Get Lambda state to discover IAM roles from functions
@@ -84,6 +96,50 @@ def get_current_state(
                     'name': func_config.get('function_name', func_arn),
                     'region': region_name
                 })
+
+    # Scan for service roles with monitored service principals
+    try:
+        paginator = iam_client.get_paginator('list_roles')
+        for page in paginator.paginate():
+            for role in page.get('Roles', []):
+                role_arn = role.get('Arn')
+                role_name = role.get('RoleName')
+                assume_role_policy = role.get('AssumeRolePolicyDocument', {})
+
+                # Check if this role has a monitored service as a principal
+                has_monitored_service = False
+                service_principals = []
+
+                for statement in assume_role_policy.get('Statement', []):
+                    if statement.get('Effect') != 'Allow':
+                        continue
+
+                    principal = statement.get('Principal', {})
+                    if isinstance(principal, dict):
+                        services = principal.get('Service', [])
+                        if isinstance(services, str):
+                            services = [services]
+
+                        for service in services:
+                            if service in MONITORED_SERVICES:
+                                has_monitored_service = True
+                                service_principals.append(service)
+
+                # If this role has a monitored service principal, track it
+                if has_monitored_service:
+                    role_arns.add(role_arn)
+                    if role_arn not in role_sources:
+                        role_sources[role_arn] = []
+
+                    for service_principal in service_principals:
+                        service_name = MONITORED_SERVICES.get(service_principal, service_principal)
+                        role_sources[role_arn].append({
+                            'type': 'service_role',
+                            'service': service_name,
+                            'principal': service_principal
+                        })
+    except ClientError as e:
+        print(f"Warning: Could not list IAM roles for service role discovery: {str(e)}")
 
     # Process each discovered role
     for role_arn in role_arns:

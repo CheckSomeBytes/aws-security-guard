@@ -1134,6 +1134,281 @@ def lambda_handler(event, context):
         delete_s3_bucket(s3, bucket_name)
 
 
+def test_service_role_monitoring(session: boto3.Session, region: str, test_name: str, interactive: bool = False):
+    """
+    Test IAM service role monitoring for monitored services
+
+    Creates service roles with various monitored service principals and tests:
+    - Service role creation with Lambda, S3, SNS principals
+    - Trust policy modifications
+    - Permission policy changes
+    - Multiple service principals in one role
+    """
+    print("\n" + "=" * 70)
+    print("=== IAM Service Role Monitoring Test ===")
+    print("=" * 70)
+
+    iam = session.client('iam', region_name=region)
+
+    # Role names
+    lambda_service_role = f'aws-security-watch-test-lambda-service-role-{test_name}'
+    s3_service_role = f'aws-security-watch-test-s3-service-role-{test_name}'
+    multi_service_role = f'aws-security-watch-test-multi-service-role-{test_name}'
+
+    role_names = [lambda_service_role, s3_service_role, multi_service_role]
+    created_roles = []
+
+    try:
+        # Step 1: Create Lambda service role
+        print("\n--- Step 1: Creating Lambda service role ---")
+        lambda_trust_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        iam.create_role(
+            RoleName=lambda_service_role,
+            AssumeRolePolicyDocument=json.dumps(lambda_trust_policy),
+            Description='Test Lambda service role for monitoring',
+            Tags=[
+                {'Key': 'TestName', 'Value': test_name},
+                {'Key': 'Purpose', 'Value': 'ServiceRoleMonitoring'}
+            ]
+        )
+        created_roles.append(lambda_service_role)
+        print(f"✓ Created Lambda service role: {lambda_service_role}")
+
+        # Attach basic execution policy
+        iam.attach_role_policy(
+            RoleName=lambda_service_role,
+            PolicyArn='arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        )
+        print(f"✓ Attached execution policy to Lambda service role")
+
+        if interactive:
+            input("\n[Press Enter to continue to S3 service role creation]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before next step...")
+            time.sleep(DELAY_SECONDS)
+
+        # Step 2: Create S3 service role
+        print("\n--- Step 2: Creating S3 service role ---")
+        s3_trust_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "s3.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        iam.create_role(
+            RoleName=s3_service_role,
+            AssumeRolePolicyDocument=json.dumps(s3_trust_policy),
+            Description='Test S3 service role for monitoring'
+        )
+        created_roles.append(s3_service_role)
+        print(f"✓ Created S3 service role: {s3_service_role}")
+
+        # Add inline policy to S3 role
+        s3_inline_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "sns:Publish"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
+
+        iam.put_role_policy(
+            RoleName=s3_service_role,
+            PolicyName='S3NotificationPolicy',
+            PolicyDocument=json.dumps(s3_inline_policy)
+        )
+        print(f"✓ Added inline policy to S3 service role")
+
+        if interactive:
+            input("\n[Press Enter to continue to multi-service role creation]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before next step...")
+            time.sleep(DELAY_SECONDS)
+
+        # Step 3: Create multi-service role
+        print("\n--- Step 3: Creating multi-service role (Lambda + SNS + SQS) ---")
+        multi_trust_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "lambda.amazonaws.com",
+                            "sns.amazonaws.com",
+                            "sqs.amazonaws.com"
+                        ]
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        iam.create_role(
+            RoleName=multi_service_role,
+            AssumeRolePolicyDocument=json.dumps(multi_trust_policy),
+            Description='Test multi-service role for monitoring'
+        )
+        created_roles.append(multi_service_role)
+        print(f"✓ Created multi-service role: {multi_service_role}")
+        print("  Principals: lambda.amazonaws.com, sns.amazonaws.com, sqs.amazonaws.com")
+
+        if interactive:
+            input("\n[Press Enter to test trust policy modification]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before next step...")
+            time.sleep(DELAY_SECONDS)
+
+        # Step 4: Modify trust policy
+        print("\n--- Step 4: Modifying Lambda service role trust policy ---")
+        print("Adding CloudTrail service to trust policy...")
+
+        modified_trust_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "lambda.amazonaws.com",
+                            "cloudtrail.amazonaws.com"
+                        ]
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        iam.update_assume_role_policy(
+            RoleName=lambda_service_role,
+            PolicyDocument=json.dumps(modified_trust_policy)
+        )
+        print(f"✓ Modified trust policy for {lambda_service_role}")
+        print("  Added CloudTrail service principal")
+
+        if interactive:
+            input("\n[Press Enter to test permission policy changes]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before next step...")
+            time.sleep(DELAY_SECONDS)
+
+        # Step 5: Modify permissions
+        print("\n--- Step 5: Modifying S3 service role permissions ---")
+
+        # Update inline policy
+        updated_inline_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "sns:Publish",
+                        "sqs:SendMessage"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
+
+        iam.put_role_policy(
+            RoleName=s3_service_role,
+            PolicyName='S3NotificationPolicy',
+            PolicyDocument=json.dumps(updated_inline_policy)
+        )
+        print(f"✓ Updated inline policy for {s3_service_role}")
+        print("  Added SQS SendMessage permission")
+
+        if interactive:
+            input("\n[Press Enter to test role description update]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before next step...")
+            time.sleep(DELAY_SECONDS)
+
+        # Step 6: Update role description
+        print("\n--- Step 6: Updating multi-service role description ---")
+        iam.update_role_description(
+            RoleName=multi_service_role,
+            Description='Updated test multi-service role for monitoring - modified'
+        )
+        print(f"✓ Updated description for {multi_service_role}")
+
+        if interactive:
+            input("\n[Press Enter to cleanup test resources]")
+        else:
+            print(f"\nWaiting {DELAY_SECONDS} seconds before cleanup...")
+            time.sleep(DELAY_SECONDS)
+
+    except Exception as e:
+        print(f"Error in service role monitoring test: {str(e)}")
+    finally:
+        # Cleanup
+        print("\n--- Cleaning up service role test resources ---")
+
+        for role_name in created_roles:
+            try:
+                # Detach all managed policies
+                try:
+                    attached_policies = iam.list_attached_role_policies(RoleName=role_name)
+                    for policy in attached_policies.get('AttachedPolicies', []):
+                        try:
+                            iam.detach_role_policy(
+                                RoleName=role_name,
+                                PolicyArn=policy['PolicyArn']
+                            )
+                        except:
+                            pass
+                except:
+                    pass
+
+                # Delete all inline policies
+                try:
+                    inline_policies = iam.list_role_policies(RoleName=role_name)
+                    for policy_name in inline_policies.get('PolicyNames', []):
+                        try:
+                            iam.delete_role_policy(
+                                RoleName=role_name,
+                                PolicyName=policy_name
+                            )
+                        except:
+                            pass
+                except:
+                    pass
+
+                # Delete the role
+                iam.delete_role(RoleName=role_name)
+                print(f"✓ Cleaned up service role: {role_name}")
+            except Exception as e:
+                print(f"Note: Could not delete role {role_name}: {str(e)}")
+
+    print("\n" + "=" * 70)
+    print("=== Service Role Monitoring Test Complete ===")
+    print("=" * 70)
+
+
 def generate_random_test_name(length: int = 8) -> str:
     """Generate a random test name using lowercase letters and digits"""
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
@@ -1407,7 +1682,7 @@ def main():
     parser.add_argument('--region', type=str, help='AWS region to test in (default: randomized per test)')
     parser.add_argument('--test-name', type=str, help='Test name (auto-generated if not provided)')
     parser.add_argument('--interactive', '-i', action='store_true', help='Interactive mode: press Enter to proceed instead of waiting')
-    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'sqs', 'sns', 'guardduty', 'eventbridge', 'iam', 'all'],
+    parser.add_argument('--service', type=str, choices=['cloudtrail', 's3', 'sqs', 'sns', 'guardduty', 'eventbridge', 'iam', 'service-roles', 'all'],
                         default='all', help='Service to test (default: all)')
     parser.add_argument('--cleanup', action='store_true', help='Clean up all test resources and exit')
     parser.add_argument('--cleanup-all-regions', action='store_true', help='Clean up test resources in ALL regions (use with --cleanup)')
@@ -1490,6 +1765,9 @@ def main():
 
     if args.service in ['iam', 'all']:
         test_iam_monitoring(session, test_region, test_name, args.interactive)
+
+    if args.service in ['service-roles', 'all']:
+        test_service_role_monitoring(session, test_region, test_name, args.interactive)
 
     print("\n" + "=" * 50)
     print("=== All tests completed ===")
