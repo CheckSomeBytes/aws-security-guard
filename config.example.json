@@ -12,12 +12,14 @@
     {
       "account_id": "210987654321",
       "role_arn": "arn:aws:iam::210987654321:role/SecurityMonitorRole",
-      "name": "staging"
+      "name": "staging",
+      "monitors": ["cloudtrail", "guardduty", "eventbridge"]
     }
   ],
   "monitoring": {
     "interval_seconds": 120,
     "log_file": "security-watch.log",
-    "state_directory": "state"
+    "state_directory": "state",
+    "enabled_monitors": ["cloudtrail", "guardduty", "eventbridge", "s3", "sqs", "sns", "lambda", "iam"]
   }
 }

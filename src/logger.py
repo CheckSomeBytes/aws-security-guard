@@ -262,7 +262,7 @@ def log_iam_change(
     Args:
         log_file: Path to log file
         account_id: AWS account ID
-        region: AWS region
+        region: AWS region (us-east-1 for IAM global)
         event_name: Type of change
         iam_data: IAM role configuration data
     """

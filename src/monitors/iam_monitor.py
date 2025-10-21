@@ -1,20 +1,71 @@
 """
 IAM Monitoring Module
 
-Monitors IAM role configuration changes for roles in CloudTrail ecosystem:
-- Lambda execution roles
-- Roles referenced in SQS/SNS access policies
-- CloudTrail service roles
-- Role deletion
-- Policy attachment changes
+Monitors IAM role configuration changes for roles used in the CloudTrail ecosystem:
+- Roles used by Lambda functions
+- Service roles with monitored service principals (Lambda, S3, SNS, SQS, CloudTrail, etc.)
+- Trust policy changes
+- Attached managed policy changes
 - Inline policy changes
-- Assume role policy changes
+- Role description and max session duration changes
 """
 
 import boto3
 from typing import Dict, Any, List, Optional, Set
 from botocore.exceptions import ClientError
 import json
+
+
+def _normalize_policy_element(element: Any) -> Any:
+    """
+    Recursively normalize a policy element for comparison
+
+    Handles:
+    - Sorting lists/arrays
+    - Sorting dictionary keys
+    - Recursive normalization of nested structures
+
+    Args:
+        element: Policy element to normalize (dict, list, or primitive)
+
+    Returns:
+        Normalized element
+    """
+    if isinstance(element, dict):
+        # Recursively normalize dictionary values and sort by keys
+        return {k: _normalize_policy_element(v) for k, v in sorted(element.items())}
+    elif isinstance(element, list):
+        # Sort lists for consistent comparison
+        # Convert to JSON string for sorting if elements are complex
+        if element and isinstance(element[0], (dict, list)):
+            return sorted(
+                [_normalize_policy_element(item) for item in element],
+                key=lambda x: json.dumps(x, sort_keys=True)
+            )
+        else:
+            # Simple primitives can be sorted directly
+            return sorted([_normalize_policy_element(item) for item in element])
+    else:
+        # Return primitives as-is
+        return element
+
+
+def _normalize_policy_document(policy_doc: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Normalize a policy document for comparison
+
+    This performs deep normalization to handle:
+    - Array ordering (e.g., ["a", "b"] vs ["b", "a"])
+    - Dict key ordering (e.g., {"AWS": ..., "Service": ...} vs {"Service": ..., "AWS": ...})
+    - Nested structure ordering
+
+    Args:
+        policy_doc: Policy document dictionary
+
+    Returns:
+        Normalized policy document
+    """
+    return _normalize_policy_element(policy_doc)
 
 
 def get_current_state(
@@ -25,112 +76,116 @@ def get_current_state(
     """
     Get current IAM role configuration state for roles in CloudTrail ecosystem
 
-    Note: IAM is global, so region is not used but kept for consistency
-
     Args:
         session: boto3 session with appropriate credentials
-        region: AWS region (not used for IAM but kept for consistency)
-        state_file_data: Complete state file data (to read Lambda, SQS, SNS, CloudTrail state)
+        region: AWS region (IAM is global, but we use one region to avoid duplicates)
+        state_file_data: Complete state file data (to discover IAM roles)
 
     Returns:
         Dictionary containing current IAM role configurations
     """
-    iam_client = session.client('iam')
+    # Only process IAM in us-east-1 to avoid duplicate monitoring across regions
+    if region != 'us-east-1':
+        return {'iam_roles': {}}
+
+    iam_client = session.client('iam', region_name=region)
     roles = {}
 
     # If no state file data provided, return empty state
     if not state_file_data:
         return {'iam_roles': roles}
 
-    # Collect IAM role names/ARNs from various sources
+    # Collect IAM role ARNs from various sources across all regions
     role_arns: Set[str] = set()
-    role_sources: Dict[str, List[Dict[str, str]]] = {}  # Map role ARN to source list
+    role_sources: Dict[str, List[Dict[str, str]]] = {}  # Map ARN to source list
 
-    # Process all regions to collect roles
+    # Define monitored service principals
+    MONITORED_SERVICES = {
+        'lambda.amazonaws.com': 'Lambda',
+        's3.amazonaws.com': 'S3',
+        'sns.amazonaws.com': 'SNS',
+        'sqs.amazonaws.com': 'SQS',
+        'cloudtrail.amazonaws.com': 'CloudTrail',
+        'events.amazonaws.com': 'EventBridge',
+        'guardduty.amazonaws.com': 'GuardDuty'
+    }
+
+    # Scan all regions for Lambda functions with roles
     for region_name, region_data in state_file_data.get('regions', {}).items():
-        # Get Lambda state to discover execution roles
+        # Get Lambda state to discover IAM roles from functions
         lambda_state = region_data.get('lambda', {})
         for func_arn, func_config in lambda_state.get('lambda_functions', {}).items():
             role_arn = func_config.get('role')
-            if role_arn:
+            if role_arn and role_arn.startswith('arn:aws:iam:'):
                 role_arns.add(role_arn)
                 if role_arn not in role_sources:
                     role_sources[role_arn] = []
                 role_sources[role_arn].append({
-                    'type': 'lambda_execution_role',
+                    'type': 'lambda_function',
                     'name': func_config.get('function_name', func_arn),
                     'region': region_name
                 })
 
-        # Get SQS state to discover roles in access policies
-        sqs_state = region_data.get('sqs', {})
-        for queue_url, queue_config in sqs_state.get('sqs_queues', {}).items():
-            access_policy = queue_config.get('access_policy', {})
-            for statement in access_policy.get('Statement', []):
-                principal = statement.get('Principal', {})
-                # Check for AWS principals (can be role ARNs)
-                aws_principals = principal.get('AWS', [])
-                if isinstance(aws_principals, str):
-                    aws_principals = [aws_principals]
-                for principal_arn in aws_principals:
-                    if ':role/' in principal_arn:
-                        role_arns.add(principal_arn)
-                        if principal_arn not in role_sources:
-                            role_sources[principal_arn] = []
-                        role_sources[principal_arn].append({
-                            'type': 'sqs_policy',
-                            'name': queue_config.get('queue_name', queue_url),
-                            'region': region_name
-                        })
+    # Scan for service roles with monitored service principals
+    try:
+        paginator = iam_client.get_paginator('list_roles')
+        for page in paginator.paginate():
+            for role in page.get('Roles', []):
+                role_arn = role.get('Arn')
+                role_name = role.get('RoleName')
+                assume_role_policy = role.get('AssumeRolePolicyDocument', {})
 
-        # Get SNS state to discover roles in access policies
-        sns_state = region_data.get('sns', {})
-        for topic_arn, topic_config in sns_state.get('sns_topics', {}).items():
-            access_policy = topic_config.get('access_policy', {})
-            for statement in access_policy.get('Statement', []):
-                principal = statement.get('Principal', {})
-                aws_principals = principal.get('AWS', [])
-                if isinstance(aws_principals, str):
-                    aws_principals = [aws_principals]
-                for principal_arn in aws_principals:
-                    if ':role/' in principal_arn:
-                        role_arns.add(principal_arn)
-                        if principal_arn not in role_sources:
-                            role_sources[principal_arn] = []
-                        role_sources[principal_arn].append({
-                            'type': 'sns_policy',
-                            'name': topic_config.get('topic_name', topic_arn),
-                            'region': region_name
-                        })
+                # Check if this role has a monitored service as a principal
+                has_monitored_service = False
+                service_principals = []
 
-        # Get CloudTrail state to discover service roles
-        cloudtrail_state = region_data.get('cloudtrail', {})
-        for trail_arn, trail_config in cloudtrail_state.get('cloudtrail_trails', {}).items():
-            # CloudTrail uses a service role for S3 delivery
-            cloud_watch_logs_role = trail_config.get('cloud_watch_logs_role_arn')
-            if cloud_watch_logs_role and ':role/' in cloud_watch_logs_role:
-                role_arns.add(cloud_watch_logs_role)
-                if cloud_watch_logs_role not in role_sources:
-                    role_sources[cloud_watch_logs_role] = []
-                role_sources[cloud_watch_logs_role].append({
-                    'type': 'cloudtrail_service_role',
-                    'name': trail_config.get('trail_name', trail_arn),
-                    'region': region_name
-                })
+                for statement in assume_role_policy.get('Statement', []):
+                    if statement.get('Effect') != 'Allow':
+                        continue
+
+                    principal = statement.get('Principal', {})
+                    if isinstance(principal, dict):
+                        services = principal.get('Service', [])
+                        if isinstance(services, str):
+                            services = [services]
+
+                        for service in services:
+                            if service in MONITORED_SERVICES:
+                                has_monitored_service = True
+                                service_principals.append(service)
+
+                # If this role has a monitored service principal, track it
+                if has_monitored_service:
+                    role_arns.add(role_arn)
+                    if role_arn not in role_sources:
+                        role_sources[role_arn] = []
+
+                    for service_principal in service_principals:
+                        service_name = MONITORED_SERVICES.get(service_principal, service_principal)
+                        role_sources[role_arn].append({
+                            'type': 'service_role',
+                            'service': service_name,
+                            'principal': service_principal
+                        })
+    except ClientError as e:
+        print(f"Warning: Could not list IAM roles for service role discovery: {str(e)}")
 
     # Process each discovered role
     for role_arn in role_arns:
         try:
             # Extract role name from ARN
-            # ARN format: arn:aws:iam::account-id:role/role-name or role/path/role-name
-            role_name = role_arn.split('/')[-1] if '/' in role_arn else role_arn
+            # ARN format: arn:aws:iam::account-id:role/role-name
+            role_name = role_arn.split('/')[-1] if '/' in role_arn else role_arn.split(':')[-1]
 
             try:
                 # Get role details
                 role_response = iam_client.get_role(RoleName=role_name)
                 role_data = role_response.get('Role', {})
 
-                # Get attached policies
+                # Get trust policy (assume role policy document)
+                trust_policy = role_data.get('AssumeRolePolicyDocument', {})
+
+                # Get attached managed policies
                 attached_policies = []
                 try:
                     paginator = iam_client.get_paginator('list_attached_role_policies')
@@ -146,32 +201,46 @@ def get_current_state(
                 # Get inline policies
                 inline_policies = {}
                 try:
+                    inline_policy_names = []
                     paginator = iam_client.get_paginator('list_role_policies')
                     for page in paginator.paginate(RoleName=role_name):
-                        for policy_name in page.get('PolicyNames', []):
-                            try:
-                                policy_response = iam_client.get_role_policy(
-                                    RoleName=role_name,
-                                    PolicyName=policy_name
-                                )
-                                inline_policies[policy_name] = policy_response.get('PolicyDocument', {})
-                            except ClientError:
-                                pass
+                        inline_policy_names.extend(page.get('PolicyNames', []))
+
+                    # Get each inline policy document
+                    for policy_name in inline_policy_names:
+                        try:
+                            policy_response = iam_client.get_role_policy(
+                                RoleName=role_name,
+                                PolicyName=policy_name
+                            )
+                            inline_policies[policy_name] = policy_response.get('PolicyDocument', {})
+                        except ClientError:
+                            pass
+                except ClientError:
+                    pass
+
+                # Get role tags
+                tags = {}
+                try:
+                    tag_response = iam_client.list_role_tags(RoleName=role_name)
+                    for tag in tag_response.get('Tags', []):
+                        tags[tag.get('Key')] = tag.get('Value')
                 except ClientError:
                     pass
 
                 # Build role state
                 roles[role_arn] = {
                     'arn': role_arn,
-                    'role_name': role_data.get('RoleName', role_name),
+                    'role_name': role_name,
                     'role_id': role_data.get('RoleId'),
                     'sources': role_sources.get(role_arn, []),
-                    'assume_role_policy': role_data.get('AssumeRolePolicyDocument', {}),
-                    'attached_policies': attached_policies,
+                    'trust_policy': trust_policy,
+                    'attached_managed_policies': sorted(attached_policies, key=lambda x: x['policy_arn']),
                     'inline_policies': inline_policies,
+                    'tags': tags,
                     'max_session_duration': role_data.get('MaxSessionDuration'),
                     'path': role_data.get('Path'),
-                    'permissions_boundary': role_data.get('PermissionsBoundary', {}).get('PermissionsBoundaryArn') if role_data.get('PermissionsBoundary') else None,
+                    'description': role_data.get('Description', ''),
                     'accessible': True
                 }
 
@@ -181,13 +250,13 @@ def get_current_state(
                     # Role doesn't exist (may have been deleted)
                     continue
                 elif error_code in ['AccessDenied', 'AccessDeniedException']:
-                    # Cross-account role or insufficient permissions
+                    # Insufficient permissions to read role
                     roles[role_arn] = {
                         'arn': role_arn,
                         'role_name': role_name,
                         'sources': role_sources.get(role_arn, []),
                         'accessible': False,
-                        'error': f'Inaccessible role: {error_code}'
+                        'error': f'Insufficient permissions: {error_code}'
                     }
                 else:
                     print(f"Warning: Error processing role {role_arn}: {str(e)}")
@@ -246,30 +315,30 @@ def detect_changes(
         if not current_role.get('accessible', True):
             continue
 
-        # Check for assume role policy changes
-        prev_assume_policy = previous_role.get('assume_role_policy', {})
-        curr_assume_policy = current_role.get('assume_role_policy', {})
+        # Check for trust policy changes
+        prev_trust = _normalize_policy_document(previous_role.get('trust_policy', {}))
+        curr_trust = _normalize_policy_document(current_role.get('trust_policy', {}))
 
-        if prev_assume_policy != curr_assume_policy:
+        if prev_trust != curr_trust:
             changes.append({
                 'event_name': 'UpdateAssumeRolePolicy',
                 'iam_data': {
                     'roleArn': role_arn,
                     'roleName': current_role.get('role_name'),
                     'sources': current_role.get('sources', []),
-                    'previousPolicy': prev_assume_policy,
-                    'currentPolicy': curr_assume_policy
+                    'previousTrustPolicy': prev_trust,
+                    'currentTrustPolicy': curr_trust
                 }
             })
 
-        # Check for attached policy changes
-        prev_attached = {p['policy_arn']: p for p in previous_role.get('attached_policies', [])}
-        curr_attached = {p['policy_arn']: p for p in current_role.get('attached_policies', [])}
+        # Check for attached managed policy changes
+        prev_managed = {p['policy_arn']: p for p in previous_role.get('attached_managed_policies', [])}
+        curr_managed = {p['policy_arn']: p for p in current_role.get('attached_managed_policies', [])}
 
         # Detect detached policies
-        detached_arns = set(prev_attached.keys()) - set(curr_attached.keys())
-        if detached_arns:
-            detached_policies = [prev_attached[arn] for arn in detached_arns]
+        detached_policy_arns = set(prev_managed.keys()) - set(curr_managed.keys())
+        if detached_policy_arns:
+            detached_policies = [prev_managed[arn] for arn in detached_policy_arns]
             changes.append({
                 'event_name': 'DetachRolePolicy',
                 'iam_data': {
@@ -281,9 +350,9 @@ def detect_changes(
             })
 
         # Detect attached policies
-        attached_arns = set(curr_attached.keys()) - set(prev_attached.keys())
-        if attached_arns:
-            attached_policies = [curr_attached[arn] for arn in attached_arns]
+        attached_policy_arns = set(curr_managed.keys()) - set(prev_managed.keys())
+        if attached_policy_arns:
+            attached_policies = [curr_managed[arn] for arn in attached_policy_arns]
             changes.append({
                 'event_name': 'AttachRolePolicy',
                 'iam_data': {
@@ -299,60 +368,64 @@ def detect_changes(
         curr_inline = current_role.get('inline_policies', {})
 
         # Detect deleted inline policies
-        deleted_inline = set(prev_inline.keys()) - set(curr_inline.keys())
-        if deleted_inline:
+        deleted_inline_names = set(prev_inline.keys()) - set(curr_inline.keys())
+        for policy_name in deleted_inline_names:
             changes.append({
-                'event_name': 'DeleteRoleInlinePolicy',
+                'event_name': 'DeleteRolePolicy',
                 'iam_data': {
                     'roleArn': role_arn,
                     'roleName': current_role.get('role_name'),
                     'sources': current_role.get('sources', []),
-                    'deletedPolicies': list(deleted_inline)
+                    'policyName': policy_name,
+                    'previousPolicy': prev_inline[policy_name]
                 }
             })
 
         # Detect added inline policies
-        added_inline = set(curr_inline.keys()) - set(prev_inline.keys())
-        if added_inline:
-            added_policies = {name: curr_inline[name] for name in added_inline}
+        added_inline_names = set(curr_inline.keys()) - set(prev_inline.keys())
+        for policy_name in added_inline_names:
             changes.append({
-                'event_name': 'PutRoleInlinePolicy',
+                'event_name': 'PutRolePolicy',
                 'iam_data': {
                     'roleArn': role_arn,
                     'roleName': current_role.get('role_name'),
                     'sources': current_role.get('sources', []),
-                    'addedPolicies': added_policies
+                    'policyName': policy_name,
+                    'currentPolicy': curr_inline[policy_name]
                 }
             })
 
         # Detect modified inline policies
         for policy_name in set(prev_inline.keys()) & set(curr_inline.keys()):
-            if prev_inline[policy_name] != curr_inline[policy_name]:
+            prev_policy = _normalize_policy_document(prev_inline[policy_name])
+            curr_policy = _normalize_policy_document(curr_inline[policy_name])
+
+            if prev_policy != curr_policy:
                 changes.append({
-                    'event_name': 'UpdateRoleInlinePolicy',
+                    'event_name': 'UpdateRolePolicy',
                     'iam_data': {
                         'roleArn': role_arn,
                         'roleName': current_role.get('role_name'),
                         'sources': current_role.get('sources', []),
                         'policyName': policy_name,
-                        'previousPolicy': prev_inline[policy_name],
-                        'currentPolicy': curr_inline[policy_name]
+                        'previousPolicy': prev_policy,
+                        'currentPolicy': curr_policy
                     }
                 })
 
-        # Check for permissions boundary changes
-        prev_boundary = previous_role.get('permissions_boundary')
-        curr_boundary = current_role.get('permissions_boundary')
+        # Check for max session duration changes
+        prev_max_session = previous_role.get('max_session_duration')
+        curr_max_session = current_role.get('max_session_duration')
 
-        if prev_boundary != curr_boundary:
+        if prev_max_session != curr_max_session:
             changes.append({
-                'event_name': 'UpdateRolePermissionsBoundary',
+                'event_name': 'UpdateRoleMaxSessionDuration',
                 'iam_data': {
                     'roleArn': role_arn,
                     'roleName': current_role.get('role_name'),
                     'sources': current_role.get('sources', []),
-                    'previousBoundary': prev_boundary,
-                    'currentBoundary': curr_boundary
+                    'previousMaxSessionDuration': prev_max_session,
+                    'currentMaxSessionDuration': curr_max_session
                 }
             })
 

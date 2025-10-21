@@ -6,6 +6,11 @@ Monitors AWS security service configurations and logs changes:
 - CloudTrail
 - GuardDuty
 - EventBridge
+- S3 (CloudTrail buckets)
+- SQS (S3 event destinations)
+- SNS (CloudTrail ecosystem topics)
+- Lambda (CloudTrail ecosystem functions)
+- IAM (Roles used in CloudTrail ecosystem)
 """
 
 import time
@@ -13,6 +18,7 @@ import boto3
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import sys
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add src directory to path
@@ -97,6 +103,14 @@ def monitor_service_in_region(
                     data_key = 'rule_data'
                 elif service_name == 's3':
                     data_key = 's3_data'
+                elif service_name == 'sqs':
+                    data_key = 'sqs_data'
+                elif service_name == 'sns':
+                    data_key = 'sns_data'
+                elif service_name == 'lambda':
+                    data_key = 'lambda_data'
+                elif service_name == 'iam':
+                    data_key = 'iam_data'
                 else:
                     # Default to service_name + '_data' for future services
                     data_key = f'{service_name}_data'
@@ -129,16 +143,41 @@ def monitor_service_in_region(
         return {'service': service_name, 'region': region, 'status': 'error', 'error': str(e), 'has_changes': False}
 
 
+def get_enabled_monitors(account: Dict[str, Any], config: Dict[str, Any]) -> List[str]:
+    """
+    Get the list of enabled monitors for an account
+
+    Args:
+        account: Account configuration dictionary
+        config: Global configuration dictionary
+
+    Returns:
+        List of enabled monitor names
+    """
+    # Check if account has specific monitors configured
+    if 'monitors' in account:
+        return account['monitors']
+
+    # Check if global enabled_monitors is configured
+    monitoring_config = config.get('monitoring', {})
+    if 'enabled_monitors' in monitoring_config:
+        return monitoring_config['enabled_monitors']
+
+    # Default to all monitors
+    return ['cloudtrail', 'guardduty', 'eventbridge', 's3', 'sqs', 'sns', 'lambda', 'iam']
+
+
 def monitor_account_region(
     session: boto3.Session,
     account_id: str,
     region: str,
     state_directory: str,
     log_file: str,
-    is_first_run: bool
+    is_first_run: bool,
+    enabled_monitors: List[str]
 ) -> Dict[str, Any]:
     """
-    Monitor a single account in a single region (all services in parallel)
+    Monitor a single account in a single region (services run sequentially in dependency order)
 
     Args:
         session: boto3 session with appropriate credentials
@@ -147,55 +186,134 @@ def monitor_account_region(
         state_directory: Directory for state files
         log_file: Path to log file
         is_first_run: Whether this is the first run for this account
+        enabled_monitors: List of monitor names to run
 
     Returns:
         Dictionary with region and collected service states
     """
-    # Load current state file for resource discovery
-    state_file_data = state_manager.load_state(state_directory, account_id) or {'regions': {}}
+    # Load old state file for comparison
+    old_state_file_data = state_manager.load_state(state_directory, account_id) or {'regions': {}}
 
-    # Define services to monitor
-    services = [
-        ('cloudtrail', cloudtrail_monitor, logger.log_cloudtrail_change),
-        ('guardduty', guardduty_monitor, logger.log_guardduty_change),
-        ('eventbridge', eventbridge_monitor, logger.log_eventbridge_change),
-        ('s3', s3_monitor, logger.log_s3_change),
-        ('sqs', sqs_monitor, logger.log_sqs_change),
-        ('sns', sns_monitor, logger.log_sns_change),
-        ('lambda', lambda_monitor, logger.log_lambda_change),
-        ('iam', iam_monitor, logger.log_iam_change)
-    ]
+    # Create fresh state that accumulates current state as we scan
+    # For cross-region dependencies (like IAM), we include old state from other regions
+    # but use fresh state for the current region
+    fresh_state_file_data = {'regions': old_state_file_data.get('regions', {}).copy()}
+    if region not in fresh_state_file_data['regions']:
+        fresh_state_file_data['regions'][region] = {}
+    else:
+        # Clear out current region's old data - we'll populate with fresh data
+        fresh_state_file_data['regions'][region] = {}
 
-    # Monitor all services in parallel
+    # Define all available services with dependencies
+    # Services are organized in tiers based on dependencies
+    all_services = {
+        # Tier 1: No dependencies (can run in parallel)
+        'tier1': [
+            ('cloudtrail', cloudtrail_monitor, logger.log_cloudtrail_change),
+            ('guardduty', guardduty_monitor, logger.log_guardduty_change),
+            ('eventbridge', eventbridge_monitor, logger.log_eventbridge_change),
+        ],
+        # Tier 2: Depends on CloudTrail
+        'tier2': [
+            ('s3', s3_monitor, logger.log_s3_change),
+        ],
+        # Tier 3: Depends on S3
+        'tier3': [
+            ('sqs', sqs_monitor, logger.log_sqs_change),
+        ],
+        # Tier 4: Depends on S3 and SQS
+        'tier4': [
+            ('sns', sns_monitor, logger.log_sns_change),
+        ],
+        # Tier 5: Depends on S3, SQS, SNS
+        'tier5': [
+            ('lambda', lambda_monitor, logger.log_lambda_change),
+        ],
+        # Tier 6: Depends on Lambda
+        'tier6': [
+            ('iam', iam_monitor, logger.log_iam_change),
+        ],
+    }
+
     service_results = []
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        futures = []
-        for service_name, monitor_module, log_function in services:
-            future = executor.submit(
-                monitor_service_in_region,
-                service_name,
-                monitor_module,
-                session,
-                account_id,
-                region,
-                state_directory,
-                log_file,
-                is_first_run,
-                log_function,
-                state_file_data
-            )
-            futures.append(future)
 
-        # Wait for all services to complete and collect results
-        for future in as_completed(futures):
-            result = future.result()
-            service_results.append(result)
-            if result['status'] == 'success':
-                print(f"  ✓ {result['service']} in {region}")
-            elif result['status'] == 'permission_error':
-                print(f"  ✗ {result['service']} in {region}: Permission denied")
-            else:
-                print(f"  ✗ {result['service']} in {region}: Error")
+    # Process each tier sequentially
+    for tier_name in ['tier1', 'tier2', 'tier3', 'tier4', 'tier5', 'tier6']:
+        tier_services = all_services[tier_name]
+
+        # Filter services based on enabled_monitors
+        enabled_tier_services = [
+            (name, module, log_func)
+            for name, module, log_func in tier_services
+            if name in enabled_monitors
+        ]
+
+        if not enabled_tier_services:
+            continue
+
+        # Tier 1 can run in parallel, others run sequentially
+        if tier_name == 'tier1':
+            # Run tier 1 services in parallel
+            with ThreadPoolExecutor(max_workers=len(enabled_tier_services)) as executor:
+                futures = []
+                for service_name, monitor_module, log_function in enabled_tier_services:
+                    future = executor.submit(
+                        monitor_service_in_region,
+                        service_name,
+                        monitor_module,
+                        session,
+                        account_id,
+                        region,
+                        state_directory,
+                        log_file,
+                        is_first_run,
+                        log_function,
+                        fresh_state_file_data  # Pass fresh state (empty for tier 1)
+                    )
+                    futures.append(future)
+
+                # Collect results
+                for future in as_completed(futures):
+                    result = future.result()
+                    service_results.append(result)
+
+                    # Add current state to fresh_state for downstream monitors
+                    if result['status'] == 'success' and 'current_state' in result:
+                        fresh_state_file_data['regions'][region][result['service']] = result['current_state']
+
+                    if result['status'] == 'success':
+                        print(f"  ✓ {result['service']} in {region}")
+                    elif result['status'] == 'permission_error':
+                        print(f"  ✗ {result['service']} in {region}: Permission denied")
+                    else:
+                        print(f"  ✗ {result['service']} in {region}: Error")
+        else:
+            # Run other tiers sequentially
+            for service_name, monitor_module, log_function in enabled_tier_services:
+                result = monitor_service_in_region(
+                    service_name,
+                    monitor_module,
+                    session,
+                    account_id,
+                    region,
+                    state_directory,
+                    log_file,
+                    is_first_run,
+                    log_function,
+                    fresh_state_file_data  # Pass accumulated fresh state
+                )
+                service_results.append(result)
+
+                # Add current state to fresh_state for downstream monitors
+                if result['status'] == 'success' and 'current_state' in result:
+                    fresh_state_file_data['regions'][region][result['service']] = result['current_state']
+
+                if result['status'] == 'success':
+                    print(f"  ✓ {result['service']} in {region}")
+                elif result['status'] == 'permission_error':
+                    print(f"  ✗ {result['service']} in {region}: Permission denied")
+                else:
+                    print(f"  ✗ {result['service']} in {region}: Error")
 
     return {
         'region': region,
@@ -208,6 +326,7 @@ def monitor_account(
     account_id: str,
     state_directory: str,
     log_file: str,
+    enabled_monitors: List[str],
     max_workers: int = 10
 ) -> None:
     """
@@ -218,11 +337,14 @@ def monitor_account(
         account_id: AWS account ID
         state_directory: Directory for state files
         log_file: Path to log file
+        enabled_monitors: List of monitor names to run
         max_workers: Maximum number of parallel region workers (default: 10)
     """
     is_first_run = state_manager.is_first_run(state_directory, account_id)
     if is_first_run:
         print(f"First run for account {account_id} - establishing baseline state")
+
+    print(f"Enabled monitors: {', '.join(enabled_monitors)}")
 
     try:
         regions = get_all_regions(session)
@@ -240,7 +362,8 @@ def monitor_account(
                     region,
                     state_directory,
                     log_file,
-                    is_first_run
+                    is_first_run,
+                    enabled_monitors
                 )
                 futures.append((future, region))
 
@@ -303,7 +426,75 @@ def main():
     parser.add_argument('--log-file', type=str, default='security-watch.log', help='Path to log file (default: security-watch.log)')
     parser.add_argument('--state-dir', type=str, default='state', help='Directory to store state files (default: state)')
     parser.add_argument('--max-workers', type=int, default=10, help='Maximum parallel region workers (default: 10)')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging of AWS API calls')
     args = parser.parse_args()
+
+    # Configure logging based on verbose flag
+    if args.verbose:
+        # Enable boto3/botocore logging to show API calls
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+        # Configure boto3 to log API calls at INFO level
+        logging.getLogger('boto3').setLevel(logging.WARNING)
+        logging.getLogger('botocore').setLevel(logging.WARNING)
+        logging.getLogger('urllib3').setLevel(logging.WARNING)
+
+        # Create a custom logger for API events
+        class APICallLogger:
+            def __init__(self):
+                self.logger = logging.getLogger('aws_api_calls')
+                self.logger.setLevel(logging.INFO)
+
+            def log_call(self, service, operation, region, **kwargs):
+                # Build parameter summary
+                param_summary = []
+                for key, value in kwargs.items():
+                    if value and key not in ['endpoint', 'client']:
+                        if isinstance(value, str) and len(value) > 50:
+                            value = value[:47] + '...'
+                        param_summary.append(f"{key}={value}")
+                        if len(param_summary) >= 3:
+                            break
+
+                param_str = ', '.join(param_summary) if param_summary else ''
+                message = f"{service}.{operation} (region={region})"
+                if param_str:
+                    message += f" [{param_str}]"
+
+                print(f"[API] {message}")
+
+        global api_call_logger
+        api_call_logger = APICallLogger()
+
+        # Monkey-patch boto3 client creation to add event listeners
+        original_client = boto3.client
+
+        def logged_client(service_name, *args, **kwargs):
+            client = original_client(service_name, *args, **kwargs)
+            region = kwargs.get('region_name', 'us-east-1')
+
+            # Wrap the client's meta.events to log before-call
+            def log_before_call(event_name=None, **event_kwargs):
+                operation = event_kwargs.get('operation_name', 'unknown')
+                params = event_kwargs.get('params', {})
+
+                # Extract key parameters
+                key_params = {}
+                important_keys = ['Bucket', 'QueueUrl', 'TopicArn', 'FunctionName', 'RoleName',
+                                'TrailName', 'DetectorId', 'RuleName', 'Name']
+                for key in important_keys:
+                    if key in params:
+                        key_params[key] = params[key]
+
+                api_call_logger.log_call(service_name, operation, region, **key_params)
+
+            client.meta.events.register('before-call', log_before_call)
+            return client
+
+        boto3.client = logged_client
+
+        print("Verbose mode enabled - AWS API calls will be logged")
+        print()
 
     # Load configuration if provided
     config = {}
@@ -374,8 +565,11 @@ def main():
                     else:
                         session = base_session
 
+                    # Get enabled monitors for this account
+                    enabled_monitors = get_enabled_monitors(account, config)
+
                     # Monitor the account
-                    monitor_account(session, account_id, state_directory, log_file, args.max_workers)
+                    monitor_account(session, account_id, state_directory, log_file, enabled_monitors, args.max_workers)
 
                 except Exception as e:
                     print(f"Error monitoring account {account_name}: {str(e)}")
