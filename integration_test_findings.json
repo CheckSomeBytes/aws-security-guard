@@ -1,0 +1,190 @@
+{
+  "metadata": {
+    "test_start_time": "2025-10-20T04:02:49.097793",
+    "test_end_time": "2025-10-20T04:10:24.023222",
+    "account_id": "833715826468",
+    "region": "us-east-1",
+    "service": "cloudtrail",
+    "test_name": "uusvxf94",
+    "profile": "sec-watch"
+  },
+  "summary": {
+    "total_findings": 9,
+    "by_category": {
+      "test_metadata": 1,
+      "test_execution": 2,
+      "log_entry": 5,
+      "log_summary": 1
+    },
+    "by_severity": {
+      "info": 9,
+      "warning": 0,
+      "error": 0
+    }
+  },
+  "findings": [
+    {
+      "timestamp": "2025-10-20T04:02:49.609830",
+      "category": "test_metadata",
+      "type": "test_initialization",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "account_id": "833715826468",
+        "region": "us-east-1",
+        "service": "cloudtrail",
+        "test_name": "uusvxf94",
+        "monitor_interval": 60
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:05:07.104381",
+      "category": "test_execution",
+      "type": "test_started",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "service": "cloudtrail",
+        "start_time": "2025-10-20T04:05:07.104341"
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:09:06.797387",
+      "category": "test_execution",
+      "type": "test_completed",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "service": "cloudtrail"
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.994613",
+      "category": "log_entry",
+      "type": "UpdateTrailS3Bucket",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "eventSource": "cloudtrail.amazonaws.com",
+        "eventTime": "2025-10-20T04:08:35Z",
+        "awsRegion": "us-east-1",
+        "responseElements": {
+          "trailName": "aws-security-watch-test-trail-uusvxf94",
+          "trailARN": "arn:aws:cloudtrail:us-east-1:833715826468:trail/aws-security-watch-test-trail-uusvxf94",
+          "previousS3Bucket": "aws-security-watch-test-bucket1-uusvxf94",
+          "currentS3Bucket": "aws-security-watch-test-bucket2-uusvxf94",
+          "previousS3KeyPrefix": null,
+          "currentS3KeyPrefix": null
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.994724",
+      "category": "log_entry",
+      "type": "UpdateEventSelectors",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "eventSource": "cloudtrail.amazonaws.com",
+        "eventTime": "2025-10-20T04:08:35Z",
+        "awsRegion": "us-east-1",
+        "responseElements": {
+          "trailName": "aws-security-watch-test-trail-uusvxf94",
+          "trailARN": "arn:aws:cloudtrail:us-east-1:833715826468:trail/aws-security-watch-test-trail-uusvxf94",
+          "eventSelectors": [
+            {
+              "ReadWriteType": "All",
+              "IncludeManagementEvents": true,
+              "DataResources": [
+                {
+                  "Type": "AWS::S3::Object",
+                  "Values": [
+                    "arn:aws:s3:::aws-security-watch-test-bucket1-uusvxf94/"
+                  ]
+                }
+              ],
+              "ExcludeManagementEventSources": []
+            }
+          ],
+          "advancedEventSelectors": []
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.994755",
+      "category": "log_entry",
+      "type": "DeleteBucket",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "eventSource": "s3.amazonaws.com",
+        "eventTime": "2025-10-20T04:08:36Z",
+        "awsRegion": "us-east-1",
+        "responseElements": {
+          "bucketName": "aws-security-watch-test-bucket1-uusvxf94",
+          "bucketArn": "arn:aws:s3:::aws-security-watch-test-bucket1-uusvxf94",
+          "sourceTrailArn": "arn:aws:cloudtrail:us-east-1:833715826468:trail/aws-security-watch-test-trail-uusvxf94"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.994772",
+      "category": "log_entry",
+      "type": "DeleteTrail",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "eventSource": "cloudtrail.amazonaws.com",
+        "eventTime": "2025-10-20T04:09:58Z",
+        "awsRegion": "us-east-1",
+        "responseElements": {
+          "trailName": "aws-security-watch-test-trail-uusvxf94",
+          "trailARN": "arn:aws:cloudtrail:us-east-1:833715826468:trail/aws-security-watch-test-trail-uusvxf94"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.994784",
+      "category": "log_entry",
+      "type": "DeleteBucket",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "eventSource": "s3.amazonaws.com",
+        "eventTime": "2025-10-20T04:09:59Z",
+        "awsRegion": "us-east-1",
+        "responseElements": {
+          "bucketName": "aws-security-watch-test-bucket2-uusvxf94",
+          "bucketArn": "arn:aws:s3:::aws-security-watch-test-bucket2-uusvxf94",
+          "sourceTrailArn": "arn:aws:cloudtrail:us-east-1:833715826468:trail/aws-security-watch-test-trail-uusvxf94"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-20T04:10:23.995793",
+      "category": "log_summary",
+      "type": "events_logged",
+      "severity": "info",
+      "service": "cloudtrail",
+      "region": "us-east-1",
+      "details": {
+        "service": "cloudtrail",
+        "total_entries": 5,
+        "event_counts": {
+          "UpdateTrailS3Bucket": 1,
+          "UpdateEventSelectors": 1,
+          "DeleteBucket": 2,
+          "DeleteTrail": 1
+        }
+      }
+    }
+  ]
+}

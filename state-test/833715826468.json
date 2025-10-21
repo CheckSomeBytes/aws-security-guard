@@ -1,0 +1,2185 @@
+{
+  "regions": {
+    "ap-south-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "eu-north-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "eu-west-3": {
+      "cloudtrail": {},
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "eu-west-2": {
+      "cloudtrail": {},
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "eu-west-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ap-northeast-3": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ap-northeast-2": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ap-northeast-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ca-central-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "sa-east-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ap-southeast-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "ap-southeast-2": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "eventbridge": {},
+      "cloudtrail": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "eu-central-1": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {},
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "us-east-1": {
+      "cloudtrail": {},
+      "guardduty": {
+        "detectors": {
+          "4cccf89df46d511ab78ab39a025ce19e": {
+            "status": "ENABLED",
+            "service_role": "arn:aws:iam::833715826468:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty",
+            "finding_publishing_frequency": "SIX_HOURS",
+            "publishing_destinations": [],
+            "data_sources": {
+              "CloudTrail": {
+                "Status": "ENABLED"
+              },
+              "DNSLogs": {
+                "Status": "ENABLED"
+              },
+              "FlowLogs": {
+                "Status": "ENABLED"
+              },
+              "S3Logs": {
+                "Status": "ENABLED"
+              },
+              "Kubernetes": {
+                "AuditLogs": {
+                  "Status": "ENABLED"
+                }
+              },
+              "MalwareProtection": {
+                "ScanEc2InstanceWithFindings": {
+                  "EbsVolumes": {
+                    "Status": "ENABLED"
+                  }
+                },
+                "ServiceRole": "arn:aws:iam::833715826468:role/aws-service-role/malware-protection.guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDutyMalwareProtection"
+              }
+            }
+          }
+        },
+        "suppression_rules": {}
+      },
+      "eventbridge": {
+        "Hourly": {
+          "arn": "arn:aws:events:us-east-1:833715826468:rule/Hourly",
+          "state": "ENABLED",
+          "description": null,
+          "event_pattern": null,
+          "schedule_expression": "rate(1 hour)",
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [
+            {
+              "Id": "llekawoay3qq7np5f1d",
+              "Arn": "arn:aws:lambda:us-east-1:833715826468:function:TTL-Instance-Tag"
+            },
+            {
+              "Id": "qdx0tb4rouzs39huqaam",
+              "Arn": "arn:aws:lambda:us-east-1:833715826468:function:TTL-Instance-Director"
+            }
+          ],
+          "tags": []
+        },
+        "amplify-d2low1rzyvoabo-main-branch-notification": {
+          "arn": "arn:aws:events:us-east-1:833715826468:rule/amplify-d2low1rzyvoabo-main-branch-notification",
+          "state": "ENABLED",
+          "description": "AWS Amplify build notifications for : App: d2low1rzyvoabo Branch: main",
+          "event_pattern": "{\"detail\":{\"appId\":[\"d2low1rzyvoabo\"],\"branchName\":[\"main\"],\"jobStatus\":[\"SUCCEED\",\"FAILED\",\"STARTED\"]},\"detail-type\":[\"Amplify Deployment Status Change\"],\"source\":[\"aws.amplify\"]}",
+          "schedule_expression": null,
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [
+            {
+              "Id": "main",
+              "Arn": "arn:aws:sns:us-east-1:833715826468:amplify-d2low1rzyvoabo_main",
+              "InputTransformer": {
+                "InputPathsMap": {
+                  "appId": "$.detail.appId",
+                  "branch": "$.detail.branchName",
+                  "jobId": "$.detail.jobId",
+                  "region": "$.region",
+                  "status": "$.detail.jobStatus"
+                },
+                "InputTemplate": "\"Build notification from the AWS Amplify Console for app: https://<branch>.<appId>.amplifyapp.com/. Your build status is <status>. Go to https://console.aws.amazon.com/amplify/apps/<appId>/branches/<branch>?region=<region> to view details on your build. \""
+              }
+            }
+          ],
+          "tags": []
+        },
+        "every-15-minutes": {
+          "arn": "arn:aws:events:us-east-1:833715826468:rule/every-15-minutes",
+          "state": "ENABLED",
+          "description": null,
+          "event_pattern": null,
+          "schedule_expression": "rate(15 minutes)",
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [],
+          "tags": []
+        },
+        "every-30-minutes": {
+          "arn": "arn:aws:events:us-east-1:833715826468:rule/every-30-minutes",
+          "state": "ENABLED",
+          "description": null,
+          "event_pattern": null,
+          "schedule_expression": "rate(30 minutes)",
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [],
+          "tags": []
+        }
+      },
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {
+          "arn:aws:iam::833715826468:role/service-role/workshop-create-instances-attack-box-role-qdyp5r8a": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-create-instances-attack-box-role-qdyp5r8a",
+            "role_name": "workshop-create-instances-attack-box-role-qdyp5r8a",
+            "role_id": "AROA4EHKV54SL6LHOSMCT",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-6a001054-a08a-4dff-8503-551135d8ff7b",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-6a001054-a08a-4dff-8503-551135d8ff7b"
+              }
+            ],
+            "inline_policies": {
+              "workshop-create-instances-attack-box": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "ec2:CreateTags"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/create-instance-roles-role-mw4tf2ui": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/create-instance-roles-role-mw4tf2ui",
+            "role_name": "create-instance-roles-role-mw4tf2ui",
+            "role_id": "AROA4EHKV54SFLGVDNWPF",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-beba2248-251c-4b4a-9e86-ad80482e4c55",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-beba2248-251c-4b4a-9e86-ad80482e4c55"
+              }
+            ],
+            "inline_policies": {
+              "create-ec2-roles": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": "iam:CreateRole",
+                    "Resource": "arn:aws:iam::833715826468:role/*"
+                  },
+                  {
+                    "Sid": "Statement1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:CreatePolicy"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "Sid": "Statement2",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:CreateInstanceProfile",
+                      "iam:AddRoleToInstanceProfile",
+                      "iam:PassRole",
+                      "iam:AttachRolePolicy"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty": {
+            "arn": "arn:aws:iam::833715826468:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty",
+            "role_name": "AWSServiceRoleForAmazonGuardDuty",
+            "role_id": "AROA4EHKV54SP5F2QIOUW",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "GuardDuty",
+                "principal": "guardduty.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "guardduty.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AmazonGuardDutyServiceRolePolicy",
+                "policy_arn": "arn:aws:iam::aws:policy/aws-service-role/AmazonGuardDutyServiceRolePolicy"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/aws-service-role/guardduty.amazonaws.com/",
+            "description": "A service-linked role required for Amazon GuardDuty to access your resources. ",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/cloudtrail-cloudwatch-role": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/cloudtrail-cloudwatch-role",
+            "role_name": "cloudtrail-cloudwatch-role",
+            "role_id": "AROA4EHKV54SH7VDUPLTW",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "CloudTrail",
+                "principal": "cloudtrail.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:SourceAccount": "833715826468",
+                      "aws:SourceArn": "arn:aws:cloudtrail:us-east-2:833715826468:trail/mamangement-logs"
+                    }
+                  }
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "Cloudtrail-CW-access-policy-mamangement-logs-c11452fd-93e1-4d70-ae3f-3d654e34b157",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/Cloudtrail-CW-access-policy-mamangement-logs-c11452fd-93e1-4d70-ae3f-3d654e34b157"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "Role for config CloudWathLogs for trail mamangement-logs",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/cloudtrail-to-cloudwatch": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/cloudtrail-to-cloudwatch",
+            "role_name": "cloudtrail-to-cloudwatch",
+            "role_id": "AROA4EHKV54SNRA6JRTMA",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "CloudTrail",
+                "principal": "cloudtrail.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "Cloudtrail-CW-access-policy-management-events-01ea89d2-c36e-4f83-9701-b9692fa59da8",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/Cloudtrail-CW-access-policy-management-events-01ea89d2-c36e-4f83-9701-b9692fa59da8"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "Role for config CloudWathLogs for trail management-events",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/TTLTester-role-39rcueuq": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/TTLTester-role-39rcueuq",
+            "role_name": "TTLTester-role-39rcueuq",
+            "role_id": "AROA4EHKV54SOQMGYTHYT",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "EC2_Tags_List",
+                "policy_arn": "arn:aws:iam::833715826468:policy/EC2_Tags_List"
+              },
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-8fb60bc5-2a48-4f27-bc53-18d037a674be",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-8fb60bc5-2a48-4f27-bc53-18d037a674be"
+              }
+            ],
+            "inline_policies": {
+              "nukeInstances": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": "ec2:TerminateInstances",
+                    "Resource": "arn:aws:ec2:*:833715826468:instance/*",
+                    "Condition": {
+                      "StringEquals": {
+                        "ec2:ResourceTag/TTL": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-send-instance-role-f6o3xsek": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-send-instance-role-f6o3xsek",
+            "role_name": "workshop-send-instance-role-f6o3xsek",
+            "role_id": "AROA4EHKV54SLEJ2VFQ5D",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-8af17ea3-5699-483a-9db1-f0f90c343173",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-8af17ea3-5699-483a-9db1-f0f90c343173"
+              },
+              {
+                "policy_name": "AmazonEC2ReadOnlyAccess",
+                "policy_arn": "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/TTLTest-role-btk2g0hl": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/TTLTest-role-btk2g0hl",
+            "role_name": "TTLTest-role-btk2g0hl",
+            "role_id": "AROA4EHKV54SMCLIGUQIQ",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-242e332f-73f8-448a-bc3d-98f4c30c2885",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-242e332f-73f8-448a-bc3d-98f4c30c2885"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/add-ip-to-security-group-role-2im2iubn": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/add-ip-to-security-group-role-2im2iubn",
+            "role_name": "add-ip-to-security-group-role-2im2iubn",
+            "role_id": "AROA4EHKV54SIUYTYHGD3",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com",
+                    "AWS": [
+                      "arn:aws:iam::056128891991:user/amplification",
+                      "AROA4EHKV54SJTTMTVN7W"
+                    ]
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-14b9d8fb-6e51-4f80-a900-e149d917428d",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-14b9d8fb-6e51-4f80-a900-e149d917428d"
+              }
+            ],
+            "inline_policies": {
+              "add-ingress-sg-rule": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": "ec2:AuthorizeSecurityGroupIngress",
+                    "Resource": [
+                      "arn:aws:ec2:*:833715826468:security-group-rule/*",
+                      "arn:aws:ec2:us-east-1:833715826468:security-group/sg-0f4bd1eaf4a0bd874"
+                    ]
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/remove-instance-roles-role-tmihu354": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/remove-instance-roles-role-tmihu354",
+            "role_name": "remove-instance-roles-role-tmihu354",
+            "role_id": "AROA4EHKV54SMUXLG7E7H",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-13d81dde-f3c4-4d5d-a25b-8469b16bc800",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-13d81dde-f3c4-4d5d-a25b-8469b16bc800"
+              }
+            ],
+            "inline_policies": {
+              "remove-roles": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:DeleteInstanceProfile",
+                      "iam:ListInstanceProfilesForRole",
+                      "iam:RemoveRoleFromInstanceProfile",
+                      "iam:ListRoles",
+                      "iam:DeleteRole",
+                      "iam:DetachRolePolicy",
+                      "iam:ListAttachedRolePolicies",
+                      "iam:ListPolicies",
+                      "iam:DeletePolicy",
+                      "iam:ListInstanceProfiles",
+                      "iam:ListInstanceProfilesForRole",
+                      "iam:DeletePolicyVersion",
+                      "iam:ListPolicyVersions"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/iam-admin": {
+            "arn": "arn:aws:iam::833715826468:role/iam-admin",
+            "role_name": "iam-admin",
+            "role_id": "AROA4EHKV54SL6YEV5JVB",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::833715826468:role/iam-limited",
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "IAMFullAccess",
+                "policy_arn": "arn:aws:iam::aws:policy/IAMFullAccess"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/",
+            "description": "Allows Lambda functions to call AWS services on your behalf.",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/TTL-Instance-Director-role-7y83qebg": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/TTL-Instance-Director-role-7y83qebg",
+            "role_name": "TTL-Instance-Director-role-7y83qebg",
+            "role_id": "AROA4EHKV54SB2E57QCRE",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-d8b8882e-49a1-4204-8e41-5e905e4761e4",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-d8b8882e-49a1-4204-8e41-5e905e4761e4"
+              }
+            ],
+            "inline_policies": {
+              "TTL-Director": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:TerminateInstances",
+                      "ec2:DeleteTags",
+                      "ec2:CreateTags",
+                      "ec2:DescribeInstanceAttribute"
+                    ],
+                    "Resource": "arn:aws:ec2:*:833715826468:instance/*"
+                  },
+                  {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DescribeInstances",
+                      "ec2:DescribeRegions"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-slack-clear-channel-role-8srtqyc5": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-slack-clear-channel-role-8srtqyc5",
+            "role_name": "workshop-slack-clear-channel-role-8srtqyc5",
+            "role_id": "AROA4EHKV54SE4WK54OJV",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-7dd8d104-c291-41bd-8d4f-3a29c57149d3",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-7dd8d104-c291-41bd-8d4f-3a29c57149d3"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/instanceTTLTag-role-lywybn4g": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/instanceTTLTag-role-lywybn4g",
+            "role_name": "instanceTTLTag-role-lywybn4g",
+            "role_id": "AROA4EHKV54SPO7AOD7FJ",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-d01714cc-d535-409e-bdf3-dbe8f026e97c",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-d01714cc-d535-409e-bdf3-dbe8f026e97c"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-create-users-role-l243qj8d": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-create-users-role-l243qj8d",
+            "role_name": "workshop-create-users-role-l243qj8d",
+            "role_id": "AROA4EHKV54SO7PKTZZMB",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-a97a8739-b7f9-456c-8df4-7ebbf2e920d7",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-a97a8739-b7f9-456c-8df4-7ebbf2e920d7"
+              }
+            ],
+            "inline_policies": {
+              "workshop-create-users": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:CreatePolicy",
+                      "iam:AttachUserPolicy",
+                      "iam:CreatePolicyVersion",
+                      "iam:CreateUser",
+                      "iam:CreateAccessKey",
+                      "iam:CreateLoginProfile"
+                    ],
+                    "Resource": [
+                      "arn:aws:iam::833715826468:policy/apollo-config-policy*",
+                      "arn:aws:iam::833715826468:user/apollo-config-*"
+                    ]
+                  },
+                  {
+                    "Sid": "Statement1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DescribeInstances"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-send-instance-info-role-e948ko68": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-send-instance-info-role-e948ko68",
+            "role_name": "workshop-send-instance-info-role-e948ko68",
+            "role_id": "AROA4EHKV54SNKUGNTNS5",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-44a73ba1-bac5-4c8c-9c10-6e8cdac3dd3b",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-44a73ba1-bac5-4c8c-9c10-6e8cdac3dd3b"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-spinup-victim-host-role-u0njrwli": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-spinup-victim-host-role-u0njrwli",
+            "role_name": "workshop-spinup-victim-host-role-u0njrwli",
+            "role_id": "AROA4EHKV54SFDRZCNXCE",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-72af32df-a38a-480c-b1f7-caf8a42472db",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-72af32df-a38a-480c-b1f7-caf8a42472db"
+              }
+            ],
+            "inline_policies": {
+              "spinup-victim-host": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "ec2:CreateTags"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-slack-send-welcome-role-06ritrnc": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-slack-send-welcome-role-06ritrnc",
+            "role_name": "workshop-slack-send-welcome-role-06ritrnc",
+            "role_id": "AROA4EHKV54SPEGZDQ7AJ",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-b887e9a9-2922-480c-9d06-29f69e3489f3",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-b887e9a9-2922-480c-9d06-29f69e3489f3"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-send-welcome-role-8itnnx8e": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-send-welcome-role-8itnnx8e",
+            "role_name": "workshop-send-welcome-role-8itnnx8e",
+            "role_id": "AROA4EHKV54SP2QP7SVQH",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-365af265-d975-4007-8939-2ff1e40aac49",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-365af265-d975-4007-8939-2ff1e40aac49"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-create-instance-victim-role-wsf8cyvc": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-create-instance-victim-role-wsf8cyvc",
+            "role_name": "workshop-create-instance-victim-role-wsf8cyvc",
+            "role_id": "AROA4EHKV54SMGFUDFGCX",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-8a4e2cbc-088c-482a-ba0e-e95455d346d1",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-8a4e2cbc-088c-482a-ba0e-e95455d346d1"
+              }
+            ],
+            "inline_policies": {
+              "workshop-create-instance-victim": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "ec2:CreateTags",
+                      "iam:PassRole"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-function-add-ip-role-ljyo72i2": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-function-add-ip-role-ljyo72i2",
+            "role_name": "workshop-function-add-ip-role-ljyo72i2",
+            "role_id": "AROA4EHKV54SEHEUFL4HN",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-17b8218f-1015-4265-9a26-6a790ad32faf",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-17b8218f-1015-4265-9a26-6a790ad32faf"
+              }
+            ],
+            "inline_policies": {
+              "add-ingress-sg-rule": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": "ec2:AuthorizeSecurityGroupIngress",
+                    "Resource": [
+                      "arn:aws:ec2:*:833715826468:security-group-rule/*",
+                      "arn:aws:ec2:us-east-1:833715826468:security-group/sg-0f4bd1eaf4a0bd874"
+                    ]
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/launch-ec2-role-2kw3go2w": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/launch-ec2-role-2kw3go2w",
+            "role_name": "launch-ec2-role-2kw3go2w",
+            "role_id": "AROA4EHKV54SK43GM6FKR",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-61a96b96-b732-4f2b-9994-a10c5c9c1b1f",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-61a96b96-b732-4f2b-9994-a10c5c9c1b1f"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-aws-creds-cyberchef-role-ucgojocs": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-aws-creds-cyberchef-role-ucgojocs",
+            "role_name": "workshop-aws-creds-cyberchef-role-ucgojocs",
+            "role_id": "AROA4EHKV54SE47BJIOJT",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-07d077d4-04f6-46d6-b7cc-6576d62da20a",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-07d077d4-04f6-46d6-b7cc-6576d62da20a"
+              },
+              {
+                "policy_name": "AmazonEC2ReadOnlyAccess",
+                "policy_arn": "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/TTL-Instance-Tag-role-lajxjw9j": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/TTL-Instance-Tag-role-lajxjw9j",
+            "role_name": "TTL-Instance-Tag-role-lajxjw9j",
+            "role_id": "AROA4EHKV54SK77XN3N4S",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-14e8f161-427f-4891-9e1d-f54d89a6062b",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-14e8f161-427f-4891-9e1d-f54d89a6062b"
+              }
+            ],
+            "inline_policies": {
+              "Instance-tag-role": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DeleteTags",
+                      "ec2:CreateTags"
+                    ],
+                    "Resource": "arn:aws:ec2:*:833715826468:instance/*"
+                  },
+                  {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DescribeInstances",
+                      "ec2:DescribeInstanceAttribute",
+                      "ec2:DescribeRegions"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/trailtowatch": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/trailtowatch",
+            "role_name": "trailtowatch",
+            "role_id": "AROA4EHKV54SCSEZDUYOQ",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "CloudTrail",
+                "principal": "cloudtrail.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:SourceArn": "arn:aws:cloudtrail:ap-northeast-2:833715826468:trail/aws-security-watch-test-trail-1objbt11",
+                      "aws:SourceAccount": "833715826468"
+                    }
+                  }
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "Cloudtrail-CW-access-policy-aws-security-watch-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/Cloudtrail-CW-access-policy-aws-security-watch-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "Role for config CloudWathLogs for trail aws-security-watch-test-trail-1objbt11",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-slack-send-instance-info-role-axz2z8vg": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-slack-send-instance-info-role-axz2z8vg",
+            "role_name": "workshop-slack-send-instance-info-role-axz2z8vg",
+            "role_id": "AROA4EHKV54SJVJ3K5SFA",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-163a0a2e-d9bc-4808-a3c0-92c126186683",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-163a0a2e-d9bc-4808-a3c0-92c126186683"
+              },
+              {
+                "policy_name": "AmazonEC2ReadOnlyAccess",
+                "policy_arn": "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/my-first-user-CloudFormationLambdaIAMRole-TEHRL2SGS4LD": {
+            "arn": "arn:aws:iam::833715826468:role/my-first-user-CloudFormationLambdaIAMRole-TEHRL2SGS4LD",
+            "role_name": "my-first-user-CloudFormationLambdaIAMRole-TEHRL2SGS4LD",
+            "role_id": "AROA4EHKV54SGXZNYTNQP",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [],
+            "inline_policies": {
+              "AllowLambdaLogging": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Action": [
+                      "logs:*"
+                    ],
+                    "Resource": "*",
+                    "Effect": "Allow"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-clear-slack-channels-role-fsla725b": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-clear-slack-channels-role-fsla725b",
+            "role_name": "workshop-clear-slack-channels-role-fsla725b",
+            "role_id": "AROA4EHKV54SLKGAXX2C4",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-7311c277-8ea4-4d94-a20a-0bd153209c54",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-7311c277-8ea4-4d94-a20a-0bd153209c54"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-instance-spin-up-role-zsp6cixx": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-instance-spin-up-role-zsp6cixx",
+            "role_name": "workshop-instance-spin-up-role-zsp6cixx",
+            "role_id": "AROA4EHKV54SLKQW5NG3I",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-6ad7f6f4-df9e-4c79-95f4-bfb05d76b66a",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-6ad7f6f4-df9e-4c79-95f4-bfb05d76b66a"
+              }
+            ],
+            "inline_policies": {
+              "workshop-ec2-spin-up-role": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "ec2:CreateTags"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-remove-users-role-1ofb5qub": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-remove-users-role-1ofb5qub",
+            "role_name": "workshop-remove-users-role-1ofb5qub",
+            "role_id": "AROA4EHKV54SOAQ7SMOWX",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-c61f7b14-8dba-42a1-b47d-9674b56239db",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-c61f7b14-8dba-42a1-b47d-9674b56239db"
+              }
+            ],
+            "inline_policies": {
+              "workshop-delete-users": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:DeletePolicy",
+                      "iam:DeleteUser",
+                      "iam:DetachUserPolicy",
+                      "iam:DeletePolicyVersion"
+                    ],
+                    "Resource": [
+                      "arn:aws:iam::833715826468:policy/apollo-config*",
+                      "arn:aws:iam::833715826468:user/apollo-config*"
+                    ]
+                  },
+                  {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "iam:ListPolicies",
+                      "iam:ListUsers",
+                      "iam:ListAccessKeys",
+                      "iam:DeleteAccessKey",
+                      "iam:ListAttachedUserPolicies",
+                      "iam:ListPolicyVersions",
+                      "iam:DeleteLoginProfile"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-create-instances-ssrf-role-uue7yf9l": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-create-instances-ssrf-role-uue7yf9l",
+            "role_name": "workshop-create-instances-ssrf-role-uue7yf9l",
+            "role_id": "AROA4EHKV54SGOPAP5XUM",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-0211049e-9abf-422b-9777-8c3969575d4e",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-0211049e-9abf-422b-9777-8c3969575d4e"
+              }
+            ],
+            "inline_policies": {
+              "workshop-create-instances-ssrf": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:CreateTags",
+                      "ec2:RunInstances"
+                    ],
+                    "Resource": "arn:aws:ec2:*:833715826468:instance/*"
+                  },
+                  {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "iam:PassRole"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-ssrf-spin-up-role-by56bv41": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-ssrf-spin-up-role-by56bv41",
+            "role_name": "workshop-ssrf-spin-up-role-by56bv41",
+            "role_id": "AROA4EHKV54SPCMP33KB5",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-034e9a5b-bcea-4b92-a293-42aea1d16403",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-034e9a5b-bcea-4b92-a293-42aea1d16403"
+              }
+            ],
+            "inline_policies": {
+              "runInstance-tag": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:CreateTags",
+                      "ec2:RunInstances"
+                    ],
+                    "Resource": "arn:aws:ec2:*:833715826468:instance/*"
+                  },
+                  {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:RunInstances",
+                      "iam:PassRole"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/lambdaPersist-role-w8kvw6sr": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/lambdaPersist-role-w8kvw6sr",
+            "role_name": "lambdaPersist-role-w8kvw6sr",
+            "role_id": "AROA4EHKV54SHYR52Y2JJ",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-b038d8cf-b1b4-4e82-baa7-7d4f80922dc6",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-b038d8cf-b1b4-4e82-baa7-7d4f80922dc6"
+              }
+            ],
+            "inline_policies": {},
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          },
+          "arn:aws:iam::833715826468:role/service-role/workshop-terminate-instances-role-m4bfpve7": {
+            "arn": "arn:aws:iam::833715826468:role/service-role/workshop-terminate-instances-role-m4bfpve7",
+            "role_name": "workshop-terminate-instances-role-m4bfpve7",
+            "role_id": "AROA4EHKV54SITHCTWLSD",
+            "sources": [
+              {
+                "type": "service_role",
+                "service": "Lambda",
+                "principal": "lambda.amazonaws.com"
+              }
+            ],
+            "trust_policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "attached_managed_policies": [
+              {
+                "policy_name": "AWSLambdaBasicExecutionRole-5f27ff8a-3c08-40ae-94e5-17ed07250990",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/AWSLambdaBasicExecutionRole-5f27ff8a-3c08-40ae-94e5-17ed07250990"
+              }
+            ],
+            "inline_policies": {
+              "terminate_instances": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DescribeInstances",
+                      "ec2:TerminateInstances"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            },
+            "tags": {},
+            "max_session_duration": 3600,
+            "path": "/service-role/",
+            "description": "",
+            "accessible": true
+          }
+        }
+      }
+    },
+    "us-east-2": {
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "cloudtrail": {
+        "mamangement-logs": {
+          "arn": "arn:aws:cloudtrail:us-east-2:833715826468:trail/mamangement-logs",
+          "s3_bucket": "aws-cloudtrail-logs-833715826468-73063f9f",
+          "s3_key_prefix": null,
+          "is_logging": true,
+          "is_multi_region": true,
+          "include_global_events": true,
+          "event_selectors": [],
+          "advanced_event_selectors": [
+            {
+              "Name": "Management events selector",
+              "FieldSelectors": [
+                {
+                  "Field": "eventCategory",
+                  "Equals": [
+                    "Management"
+                  ]
+                }
+              ]
+            }
+          ],
+          "home_region": "us-east-2"
+        }
+      },
+      "eventbridge": {
+        "Hourly": {
+          "arn": "arn:aws:events:us-east-2:833715826468:rule/Hourly",
+          "state": "ENABLED",
+          "description": null,
+          "event_pattern": null,
+          "schedule_expression": "rate(1 hour)",
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [
+            {
+              "Id": "volmjb668te5k5xqs7p",
+              "Arn": "arn:aws:lambda:us-east-2:833715826468:function:TTLTester"
+            }
+          ],
+          "tags": []
+        },
+        "RunEveryMinute": {
+          "arn": "arn:aws:events:us-east-2:833715826468:rule/RunEveryMinute",
+          "state": "ENABLED",
+          "description": null,
+          "event_pattern": null,
+          "schedule_expression": "rate(1 minute)",
+          "role_arn": null,
+          "managed_by": null,
+          "event_bus_name": "default",
+          "targets": [],
+          "tags": []
+        }
+      },
+      "s3": {
+        "s3_buckets": {
+          "aws-cloudtrail-logs-833715826468-73063f9f": {
+            "arn": "arn:aws:s3:::aws-cloudtrail-logs-833715826468-73063f9f",
+            "region": "us-east-2",
+            "source_trail_arn": "arn:aws:cloudtrail:us-east-2:833715826468:trail/mamangement-logs",
+            "bucket_size_bytes": 112340000,
+            "versioning": "Disabled",
+            "encryption": {
+              "SSEAlgorithm": "AES256",
+              "KMSMasterKeyID": ""
+            },
+            "event_notifications": [],
+            "accessible": true
+          }
+        }
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "us-west-1": {
+      "cloudtrail": {},
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "eventbridge": {},
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    },
+    "us-west-2": {
+      "cloudtrail": {},
+      "eventbridge": {},
+      "guardduty": {
+        "detectors": {},
+        "suppression_rules": {}
+      },
+      "s3": {
+        "s3_buckets": {}
+      },
+      "sqs": {
+        "sqs_queues": {}
+      },
+      "sns": {
+        "sns_topics": {}
+      },
+      "lambda": {
+        "lambda_functions": {}
+      },
+      "iam": {
+        "iam_roles": {}
+      }
+    }
+  }
+}

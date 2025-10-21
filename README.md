@@ -23,6 +23,51 @@ Monitors the following AWS services across all regions:
 - Event pattern and schedule changes
 - Target modifications
 
+### S3 (CloudTrail Buckets)
+- Bucket deletion
+- Bucket size reductions greater than 50%
+- Encryption changes:
+  - Adding encryption to unencrypted buckets
+  - Modifying encryption settings (e.g., AES256 to KMS)
+  - Does NOT log encryption removal
+- Event notification configuration changes:
+  - Filter prefix/suffix changes
+  - Event type changes
+  - Destination changes (SQS, SNS, Lambda)
+
+### SQS (S3 Event Destinations)
+- Queue deletion
+- Encryption setting changes
+- Access policy changes
+- Lambda event source mapping changes (triggers)
+
+### SNS (CloudTrail Ecosystem Topics)
+- Topic deletion
+- Subscription changes (update, delete)
+- Access policy changes
+- Encryption changes:
+  - Adding encryption to unencrypted topics
+  - Modifying encryption settings (e.g., changing KMS key)
+  - Does NOT log encryption removal
+
+### Lambda (CloudTrail Ecosystem Functions)
+- Function deletion
+- Code changes (CodeSha256)
+- Runtime changes
+- Configuration changes (memory, timeout)
+- Execution role changes
+- Environment variable changes
+- VPC configuration changes
+- Layer changes
+
+### IAM (Roles in CloudTrail Ecosystem)
+- Role deletion
+- Trust policy (AssumeRole) changes
+- Managed policy attachment/detachment
+- Inline policy changes (create, update, delete)
+- Role description changes
+- Max session duration changes
+
 ## Requirements
 
 - Python 3.7+
@@ -59,12 +104,19 @@ cp config.example.json config.json
       "account_id": "123456789012",
       "role_arn": "arn:aws:iam::123456789012:role/SecurityMonitorRole",
       "name": "production"
+    },
+    {
+      "account_id": "210987654321",
+      "role_arn": "arn:aws:iam::210987654321:role/SecurityMonitorRole",
+      "name": "staging",
+      "monitors": ["cloudtrail", "guardduty", "eventbridge"]
     }
   ],
   "monitoring": {
     "interval_seconds": 120,
     "log_file": "security-watch.log",
-    "state_directory": "state"
+    "state_directory": "state",
+    "enabled_monitors": ["cloudtrail", "guardduty", "eventbridge", "s3", "sqs", "sns", "lambda", "iam"]
   }
 }
 ```
@@ -98,6 +150,44 @@ Configuration can be set via command-line arguments or config file (command-line
 - `log_file` / `--log-file`: Path to output log file (default: security-watch.log)
 - `state_directory` / `--state-dir`: Directory to store state files (default: state)
 
+### Monitor Selection
+
+You can control which monitors run for each account:
+
+**Global Monitor Selection:**
+Set `enabled_monitors` in the `monitoring` section to specify default monitors for all accounts:
+```json
+"monitoring": {
+  "enabled_monitors": ["cloudtrail", "guardduty", "eventbridge"]
+}
+```
+
+**Per-Account Monitor Selection:**
+Override the global setting by adding a `monitors` array to specific accounts:
+```json
+{
+  "account_id": "123456789012",
+  "name": "production",
+  "monitors": ["cloudtrail", "guardduty"]
+}
+```
+
+**Available Monitors:**
+- `cloudtrail` - CloudTrail trail configuration monitoring
+- `guardduty` - GuardDuty detector and rule monitoring
+- `eventbridge` - EventBridge rule monitoring
+- `s3` - S3 bucket monitoring (for CloudTrail buckets)
+- `sqs` - SQS queue monitoring (for S3 event destinations)
+- `sns` - SNS topic monitoring (for CloudTrail ecosystem)
+- `lambda` - Lambda function monitoring (for CloudTrail ecosystem)
+- `iam` - IAM role monitoring (for roles used in CloudTrail ecosystem)
+
+**Default Behavior:**
+- If no configuration is provided, all monitors are enabled
+- Per-account settings override global settings
+- If an account has no `monitors` specified, it uses the global `enabled_monitors`
+- If neither is specified, all 8 monitors run by default
+
 ## Usage
 
 ### Command-Line Arguments
@@ -112,6 +202,7 @@ Options:
   --log-file PATH          Path to log file (default: security-watch.log)
   --state-dir PATH         Directory to store state files (default: state)
   --max-workers NUM        Maximum parallel region workers (default: 10)
+  --verbose, -v            Enable verbose logging of AWS API calls
 ```
 
 ### Usage Examples
@@ -146,6 +237,11 @@ python aws_security_watch.py --profile myprofile --interval 180 --log-file custo
 python aws_security_watch.py --profile myprofile --max-workers 20
 ```
 
+**With verbose AWS API logging (for debugging):**
+```bash
+python aws_security_watch.py --profile myprofile --verbose
+```
+
 **Using environment variables (no arguments):**
 ```bash
 export AWS_ACCESS_KEY_ID=your_key
@@ -156,10 +252,51 @@ python aws_security_watch.py
 ### Performance Notes
 
 The tool runs checks in parallel to maximize performance:
-- **Service-level parallelization**: All 3 services (CloudTrail, GuardDuty, EventBridge) are checked simultaneously in each region
 - **Region-level parallelization**: Multiple regions are processed in parallel (configurable with `--max-workers`)
-- Default setting of 10 parallel workers balances speed and API rate limits
+- **Service-level execution**: Within each region, services run sequentially in dependency order to ensure fresh data:
+  - **Tier 1** (parallel): CloudTrail, GuardDuty, EventBridge
+  - **Tier 2**: S3 (depends on CloudTrail)
+  - **Tier 3**: SQS (depends on S3)
+  - **Tier 4**: SNS (depends on S3, SQS)
+  - **Tier 5**: Lambda (depends on S3, SQS, SNS)
+  - **Tier 6**: IAM (depends on Lambda)
+- Default setting of 10 parallel region workers balances speed and API rate limits
 - Increase `--max-workers` for faster execution if you have many regions and higher API limits
+
+**Why Sequential Execution Within Regions:**
+Services like S3, SQS, SNS, Lambda, and IAM discover resources from upstream services. Sequential execution ensures each monitor sees the current (just-scanned) state rather than stale data from the previous run. This eliminates race conditions where deleted resources are queried.
+
+**Note on IAM Monitoring:**
+- IAM is a global service, so IAM role monitoring only occurs in the `us-east-1` region to avoid duplicate checks
+- IAM roles are discovered from Lambda functions and other services in the CloudTrail ecosystem
+- Only roles that are actively used by monitored resources are tracked
+
+### Verbose Mode
+
+Enable verbose mode with `--verbose` or `-v` to see all AWS API calls being made:
+
+```bash
+python aws_security_watch.py --profile myprofile --verbose
+```
+
+This will output detailed logs showing:
+- Service name and operation (e.g., `s3.GetBucketEncryption`)
+- Region where the call is made
+- Key parameters being passed (bucket names, queue URLs, etc.)
+
+Example output:
+```
+[API] ec2.DescribeRegions (region=us-east-1)
+[API] cloudtrail.DescribeTrails (region=us-east-1)
+[API] s3.GetBucketLocation (region=us-east-1) [Bucket=my-cloudtrail-bucket]
+[API] guardduty.ListDetectors (region=us-east-1)
+```
+
+Verbose mode is useful for:
+- Debugging permission issues
+- Understanding which AWS APIs are being called
+- Troubleshooting monitor behavior
+- Verifying API rate limiting concerns
 
 ### How It Works
 
@@ -199,6 +336,11 @@ Attach the `iam-policies/monitoring-policy.json` to your IAM user or role. This 
 - CloudTrail trail configurations
 - GuardDuty detectors and rules
 - EventBridge rules
+- S3 buckets (for CloudTrail destinations)
+- SQS queues (for S3 event notifications)
+- SNS topics (for CloudTrail ecosystem)
+- Lambda functions (for CloudTrail ecosystem)
+- IAM roles (for roles used by monitored resources)
 - EC2 region listing
 - STS for cross-account access
 
@@ -279,9 +421,14 @@ aws-security-watch/
 │   ├── state_manager.py       # State persistence
 │   ├── logger.py              # CloudTrail-style logging
 │   └── monitors/
-│       ├── cloudtrail_monitor.py
-│       ├── guardduty_monitor.py
-│       └── eventbridge_monitor.py
+│       ├── cloudtrail_monitor.py  # CloudTrail trail monitoring
+│       ├── guardduty_monitor.py   # GuardDuty detector monitoring
+│       ├── eventbridge_monitor.py # EventBridge rule monitoring
+│       ├── s3_monitor.py          # S3 bucket monitoring
+│       ├── sqs_monitor.py         # SQS queue monitoring
+│       ├── sns_monitor.py         # SNS topic monitoring
+│       ├── lambda_monitor.py      # Lambda function monitoring
+│       └── iam_monitor.py         # IAM role monitoring
 ├── iam-policies/
 │   ├── monitoring-policy.json # Read-only monitoring permissions
 │   └── testing-policy.json    # Testing permissions

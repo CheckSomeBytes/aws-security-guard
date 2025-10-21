@@ -249,6 +249,33 @@ def log_lambda_change(
     )
 
 
+def log_iam_change(
+    log_file: str,
+    account_id: str,
+    region: str,
+    event_name: str,
+    iam_data: Dict[str, Any]
+) -> None:
+    """
+    Log an IAM role configuration change
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        region: AWS region (us-east-1 for IAM global)
+        event_name: Type of change
+        iam_data: IAM role configuration data
+    """
+    log_event(
+        log_file=log_file,
+        event_source="iam.amazonaws.com",
+        event_name=event_name,
+        account_id=account_id,
+        region=region,
+        response_elements=iam_data
+    )
+
+
 def log_permission_error(
     log_file: str,
     account_id: str,

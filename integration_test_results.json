@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-10-20T04:10:24.021379",
+  "profile": "sec-watch",
+  "region": "us-east-1",
+  "service": "cloudtrail",
+  "test_name": "uusvxf94",
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0
+  },
+  "results": [
+    {
+      "test": "Cloudtrail Test Execution",
+      "passed": true,
+      "message": "Test infrastructure completed successfully",
+      "timestamp": "2025-10-20T04:09:06.798651"
+    },
+    {
+      "test": "Cloudtrail State Update",
+      "passed": true,
+      "message": "State file updated: trails=0",
+      "timestamp": "2025-10-20T04:10:23.988597"
+    },
+    {
+      "test": "Cloudtrail Log Generation",
+      "passed": true,
+      "message": "Generated 5 log entries: UpdateTrailS3Bucket=1, UpdateEventSelectors=1, DeleteBucket=2, DeleteTrail=1",
+      "timestamp": "2025-10-20T04:10:23.995706"
+    }
+  ]
+}
