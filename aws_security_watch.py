@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 import credentials
 import state_manager
 import logger
+import error_tracker as error_tracker_module
 from monitors import cloudtrail_monitor, guardduty_monitor, eventbridge_monitor, s3_monitor, sqs_monitor, sns_monitor, lambda_monitor, iam_monitor
 
 
@@ -55,7 +56,8 @@ def monitor_service_in_region(
     log_file: str,
     is_first_run: bool,
     log_function,
-    state_file_data: Optional[Dict[str, Any]] = None
+    state_file_data: Optional[Dict[str, Any]] = None,
+    error_tracker: Optional[error_tracker_module.ErrorTracker] = None
 ) -> Dict[str, Any]:
     """
     Monitor a single service in a single region
@@ -71,18 +73,24 @@ def monitor_service_in_region(
         is_first_run: Whether this is the first run for this account
         log_function: Logging function for this service
         state_file_data: Complete state file data for resource discovery
+        error_tracker: ErrorTracker instance for collecting API failures
 
     Returns:
         Dictionary with service name, status, current state, and any changes
     """
     try:
-        # Check if monitor supports state_file_data parameter
+        # Check if monitor supports state_file_data and error_tracker parameters
         import inspect
         sig = inspect.signature(monitor_module.get_current_state)
+
+        # Build kwargs based on what the monitor supports
+        kwargs = {}
         if 'state_file_data' in sig.parameters:
-            current_state = monitor_module.get_current_state(session, region, state_file_data)
-        else:
-            current_state = monitor_module.get_current_state(session, region)
+            kwargs['state_file_data'] = state_file_data
+        if 'error_tracker' in sig.parameters:
+            kwargs['error_tracker'] = error_tracker
+
+        current_state = monitor_module.get_current_state(session, region, **kwargs)
 
         previous_state = state_manager.get_service_state(
             state_directory, account_id, service_name, region
@@ -136,10 +144,26 @@ def monitor_service_in_region(
         }
 
     except PermissionError as e:
-        logger.log_permission_error(log_file, account_id, region, service_name, str(e))
+        # Track the error for consolidated reporting in MonitoringAPIFailure log
+        # Don't log individual permission errors - they'll be included in the summary
+        if error_tracker:
+            error_tracker.add_error(
+                service=service_name,
+                region=region,
+                error_code='AccessDenied',
+                error_message=str(e)
+            )
         return {'service': service_name, 'region': region, 'status': 'permission_error', 'error': str(e), 'has_changes': False}
     except Exception as e:
         print(f"Error monitoring {service_name} in {region}: {str(e)}")
+        # Track non-permission errors too
+        if error_tracker:
+            error_tracker.add_error(
+                service=service_name,
+                region=region,
+                error_code='UnknownError',
+                error_message=str(e)
+            )
         return {'service': service_name, 'region': region, 'status': 'error', 'error': str(e), 'has_changes': False}
 
 
@@ -174,7 +198,8 @@ def monitor_account_region(
     state_directory: str,
     log_file: str,
     is_first_run: bool,
-    enabled_monitors: List[str]
+    enabled_monitors: List[str],
+    error_tracker: Optional[error_tracker_module.ErrorTracker] = None
 ) -> Dict[str, Any]:
     """
     Monitor a single account in a single region (services run sequentially in dependency order)
@@ -187,6 +212,7 @@ def monitor_account_region(
         log_file: Path to log file
         is_first_run: Whether this is the first run for this account
         enabled_monitors: List of monitor names to run
+        error_tracker: ErrorTracker instance for collecting API failures
 
     Returns:
         Dictionary with region and collected service states
@@ -268,7 +294,8 @@ def monitor_account_region(
                         log_file,
                         is_first_run,
                         log_function,
-                        fresh_state_file_data  # Pass fresh state (empty for tier 1)
+                        fresh_state_file_data,  # Pass fresh state (empty for tier 1)
+                        error_tracker  # Pass error tracker
                     )
                     futures.append(future)
 
@@ -277,7 +304,8 @@ def monitor_account_region(
                     result = future.result()
                     service_results.append(result)
 
-                    # Add current state to fresh_state for downstream monitors
+                    # Only add current state to fresh_state for successful monitors
+                    # Do NOT add state for permission_error or error status
                     if result['status'] == 'success' and 'current_state' in result:
                         fresh_state_file_data['regions'][region][result['service']] = result['current_state']
 
@@ -300,11 +328,13 @@ def monitor_account_region(
                     log_file,
                     is_first_run,
                     log_function,
-                    fresh_state_file_data  # Pass accumulated fresh state
+                    fresh_state_file_data,  # Pass accumulated fresh state
+                    error_tracker  # Pass error tracker
                 )
                 service_results.append(result)
 
-                # Add current state to fresh_state for downstream monitors
+                # Only add current state to fresh_state for successful monitors
+                # Do NOT add state for permission_error or error status
                 if result['status'] == 'success' and 'current_state' in result:
                     fresh_state_file_data['regions'][region][result['service']] = result['current_state']
 
@@ -327,7 +357,8 @@ def monitor_account(
     state_directory: str,
     log_file: str,
     enabled_monitors: List[str],
-    max_workers: int = 10
+    max_workers: int = 10,
+    specific_region: Optional[str] = None
 ) -> None:
     """
     Monitor all regions in an account (parallel regions, batch state updates)
@@ -339,7 +370,12 @@ def monitor_account(
         log_file: Path to log file
         enabled_monitors: List of monitor names to run
         max_workers: Maximum number of parallel region workers (default: 10)
+        specific_region: Specific region to monitor (optional, default: all regions)
     """
+    # Create error tracker for this monitoring run
+    error_tracker = error_tracker_module.ErrorTracker()
+    run_start_time = time.time()
+
     is_first_run = state_manager.is_first_run(state_directory, account_id)
     if is_first_run:
         print(f"First run for account {account_id} - establishing baseline state")
@@ -347,8 +383,12 @@ def monitor_account(
     print(f"Enabled monitors: {', '.join(enabled_monitors)}")
 
     try:
-        regions = get_all_regions(session)
-        print(f"Monitoring {len(regions)} regions for account {account_id}")
+        if specific_region:
+            regions = [specific_region]
+            print(f"Monitoring specific region: {specific_region}")
+        else:
+            regions = get_all_regions(session)
+            print(f"Monitoring {len(regions)} regions for account {account_id}")
 
         # Monitor all regions in parallel
         region_results = []
@@ -363,7 +403,8 @@ def monitor_account(
                     state_directory,
                     log_file,
                     is_first_run,
-                    enabled_monitors
+                    enabled_monitors,
+                    error_tracker  # Pass error tracker to all regions
                 )
                 futures.append((future, region))
 
@@ -396,13 +437,25 @@ def monitor_account(
 
             for region_result in region_results:
                 region = region_result['region']
+
+                # Only process regions with successful service results
+                successful_services = [
+                    s for s in region_result.get('service_results', [])
+                    if s.get('status') == 'success' and 'current_state' in s
+                ]
+
+                # Skip regions where all services failed
+                if not successful_services:
+                    continue
+
+                # Ensure region exists in complete state
                 if region not in complete_state['regions']:
                     complete_state['regions'][region] = {}
 
-                for service_result in region_result.get('service_results', []):
-                    if service_result.get('status') == 'success' and 'current_state' in service_result:
-                        service_name = service_result['service']
-                        complete_state['regions'][region][service_name] = service_result['current_state']
+                # Add successful service states
+                for service_result in successful_services:
+                    service_name = service_result['service']
+                    complete_state['regions'][region][service_name] = service_result['current_state']
 
             # Write state file once with all updates
             state_manager.save_state(state_directory, account_id, complete_state)
@@ -410,8 +463,27 @@ def monitor_account(
         else:
             print(f"No changes detected, state file unchanged")
 
+        # Log API failures if any occurred
+        run_duration = time.time() - run_start_time
+        if error_tracker.has_errors():
+            print(f"\n⚠ {error_tracker.get_error_count()} API failure(s) occurred during this run")
+            logger.log_api_failures(
+                log_file=log_file,
+                account_id=account_id,
+                api_failures=error_tracker.get_errors(),
+                run_duration=run_duration
+            )
+
     except Exception as e:
         print(f"Error getting regions for account {account_id}: {str(e)}")
+        # Log API failures if any occurred during the failed run
+        run_duration = time.time() - run_start_time
+        logger.log_api_failures(
+            log_file=log_file,
+            account_id=account_id,
+            api_failures=error_tracker.get_errors(),
+            run_duration=run_duration
+        )
 
 
 def main():
@@ -426,6 +498,7 @@ def main():
     parser.add_argument('--log-file', type=str, default='security-watch.log', help='Path to log file (default: security-watch.log)')
     parser.add_argument('--state-dir', type=str, default='state', help='Directory to store state files (default: state)')
     parser.add_argument('--max-workers', type=int, default=10, help='Maximum parallel region workers (default: 10)')
+    parser.add_argument('--region', type=str, help='Specific AWS region to monitor (optional, default: all regions)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging of AWS API calls')
     args = parser.parse_args()
 
@@ -569,7 +642,7 @@ def main():
                     enabled_monitors = get_enabled_monitors(account, config)
 
                     # Monitor the account
-                    monitor_account(session, account_id, state_directory, log_file, enabled_monitors, args.max_workers)
+                    monitor_account(session, account_id, state_directory, log_file, enabled_monitors, args.max_workers, args.region)
 
                 except Exception as e:
                     print(f"Error monitoring account {account_name}: {str(e)}")

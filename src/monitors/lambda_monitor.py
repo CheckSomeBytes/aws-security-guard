@@ -19,7 +19,8 @@ from botocore.exceptions import ClientError
 def get_current_state(
     session: boto3.Session,
     region: str,
-    state_file_data: Optional[Dict[str, Any]] = None
+    state_file_data: Optional[Dict[str, Any]] = None,
+    error_tracker=None
 ) -> Dict[str, Any]:
     """
     Get current Lambda function configuration state for functions in CloudTrail ecosystem
@@ -28,6 +29,7 @@ def get_current_state(
         session: boto3 session with appropriate credentials
         region: AWS region to monitor
         state_file_data: Complete state file data (to read S3, SNS, SQS state)
+        error_tracker: Optional error tracker for recording API failures
 
     Returns:
         Dictionary containing current Lambda function configurations
@@ -139,6 +141,15 @@ def get_current_state(
                         'accessible': False,
                         'error': f'Cross-account or inaccessible function: {error_code}'
                     }
+                    # Track the error
+                    if error_tracker:
+                        error_tracker.add_error(
+                            service='lambda',
+                            region=region,
+                            error_code=error_code,
+                            error_message=f'Access denied to function {function_name}: {str(e)}',
+                            api_call='get_function'
+                        )
                 else:
                     print(f"Warning: Error processing function {func_arn}: {str(e)}")
 

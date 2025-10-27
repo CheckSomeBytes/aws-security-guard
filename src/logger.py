@@ -302,3 +302,61 @@ def log_permission_error(
         error_code="AccessDenied",
         error_message=error_message
     )
+
+
+def log_api_failures(
+    log_file: str,
+    account_id: str,
+    api_failures: list,
+    run_duration: Optional[float] = None
+) -> None:
+    """
+    Log API failures that occurred during monitoring run.
+    Only logs if there are actual failures.
+
+    Args:
+        log_file: Path to log file
+        account_id: AWS account ID
+        api_failures: List of API failure dictionaries from ErrorTracker
+        run_duration: Optional duration of the monitoring run in seconds
+    """
+    # Only log if there are actual failures
+    if not api_failures or len(api_failures) == 0:
+        return
+
+    summary_data = {
+        "api_failures": api_failures,
+        "total_failures": len(api_failures)
+    }
+
+    if run_duration is not None:
+        summary_data["run_duration_seconds"] = round(run_duration, 2)
+
+    # Group failures by service for additional context
+    failures_by_service = {}
+    for failure in api_failures:
+        service = failure.get('service', 'unknown')
+        if service not in failures_by_service:
+            failures_by_service[service] = 0
+        failures_by_service[service] += 1
+
+    summary_data["failures_by_service"] = failures_by_service
+
+    # Group failures by region
+    failures_by_region = {}
+    for failure in api_failures:
+        region = failure.get('region', 'unknown')
+        if region not in failures_by_region:
+            failures_by_region[region] = 0
+        failures_by_region[region] += 1
+
+    summary_data["failures_by_region"] = failures_by_region
+
+    log_event(
+        log_file=log_file,
+        event_source="aws-security-watch.internal",
+        event_name="MonitoringAPIFailure",
+        account_id=account_id,
+        region="global",
+        response_elements=summary_data
+    )

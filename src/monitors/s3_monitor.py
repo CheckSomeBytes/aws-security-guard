@@ -141,7 +141,8 @@ def _parse_event_notifications(notification_config: Dict[str, Any]) -> List[Dict
 def get_current_state(
     session: boto3.Session,
     region: str,
-    state_file_data: Optional[Dict[str, Any]] = None
+    state_file_data: Optional[Dict[str, Any]] = None,
+    error_tracker=None
 ) -> Dict[str, Any]:
     """
     Get current S3 bucket configuration state for CloudTrail buckets
@@ -211,6 +212,15 @@ def get_current_state(
                 # Bucket may not have encryption configured
                 if error_code != 'ServerSideEncryptionConfigurationNotFoundError':
                     print(f"Warning: Could not get encryption for bucket {bucket_name}: {str(e)}")
+                    # Track access denied errors
+                    if error_code in ['AccessDenied', 'AllAccessDisabled'] and error_tracker:
+                        error_tracker.add_error(
+                            service='s3',
+                            region=region,
+                            error_code=error_code,
+                            error_message=f'Access denied to get encryption for bucket {bucket_name}: {str(e)}',
+                            api_call='get_bucket_encryption'
+                        )
 
             # Get event notification configuration
             event_notifications = []
@@ -222,6 +232,15 @@ def get_current_state(
                 # Don't warn for NoSuchBucket - it means bucket was deleted (will be caught by deletion detection)
                 if error_code not in ['NoSuchBucket']:
                     print(f"Warning: Could not get notifications for bucket {bucket_name}: {str(e)}")
+                    # Track access denied errors
+                    if error_code in ['AccessDenied', 'AllAccessDisabled'] and error_tracker:
+                        error_tracker.add_error(
+                            service='s3',
+                            region=region,
+                            error_code=error_code,
+                            error_message=f'Access denied to get notifications for bucket {bucket_name}: {str(e)}',
+                            api_call='get_bucket_notification_configuration'
+                        )
 
             # Build bucket state
             buckets[bucket_name] = {
@@ -249,6 +268,15 @@ def get_current_state(
                     'accessible': False,
                     'error': f'Cross-account or inaccessible bucket: {error_code}'
                 }
+                # Track the error
+                if error_tracker:
+                    error_tracker.add_error(
+                        service='s3',
+                        region=region,
+                        error_code=error_code,
+                        error_message=f'Access denied to bucket {bucket_name}: {str(e)}',
+                        api_call='get_bucket_*'
+                    )
             else:
                 print(f"Warning: Error processing bucket {bucket_name}: {str(e)}")
 
