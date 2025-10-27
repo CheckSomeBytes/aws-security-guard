@@ -23,7 +23,8 @@ import json
 def get_current_state(
     session: boto3.Session,
     region: str,
-    state_file_data: Optional[Dict[str, Any]] = None
+    state_file_data: Optional[Dict[str, Any]] = None,
+    error_tracker=None
 ) -> Dict[str, Any]:
     """
     Get current SNS topic configuration state for topics in CloudTrail ecosystem
@@ -32,6 +33,7 @@ def get_current_state(
         session: boto3 session with appropriate credentials
         region: AWS region to monitor
         state_file_data: Complete state file data (to read S3 and SQS state)
+        error_tracker: Optional error tracker for recording API failures
 
     Returns:
         Dictionary containing current SNS topic configurations
@@ -157,6 +159,15 @@ def get_current_state(
                         'accessible': False,
                         'error': f'Cross-account or inaccessible topic: {error_code}'
                     }
+                    # Track the error
+                    if error_tracker:
+                        error_tracker.add_error(
+                            service='sns',
+                            region=region,
+                            error_code=error_code,
+                            error_message=f'Access denied to topic {topic_name}: {str(e)}',
+                            api_call='get_topic_attributes'
+                        )
                 else:
                     print(f"Warning: Error processing topic {topic_arn}: {str(e)}")
 

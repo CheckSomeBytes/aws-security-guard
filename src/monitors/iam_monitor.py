@@ -71,7 +71,8 @@ def _normalize_policy_document(policy_doc: Dict[str, Any]) -> Dict[str, Any]:
 def get_current_state(
     session: boto3.Session,
     region: str,
-    state_file_data: Optional[Dict[str, Any]] = None
+    state_file_data: Optional[Dict[str, Any]] = None,
+    error_tracker=None
 ) -> Dict[str, Any]:
     """
     Get current IAM role configuration state for roles in CloudTrail ecosystem
@@ -80,6 +81,7 @@ def get_current_state(
         session: boto3 session with appropriate credentials
         region: AWS region (IAM is global, but we use one region to avoid duplicates)
         state_file_data: Complete state file data (to discover IAM roles)
+        error_tracker: Optional error tracker for recording API failures
 
     Returns:
         Dictionary containing current IAM role configurations
@@ -168,7 +170,12 @@ def get_current_state(
                             'principal': service_principal
                         })
     except ClientError as e:
+        error_code = e.response['Error']['Code']
         print(f"Warning: Could not list IAM roles for service role discovery: {str(e)}")
+        # Raise PermissionError if access was denied - this prevents empty state from being saved
+        # The error will be tracked by the orchestration layer
+        if error_code in ['AccessDenied', 'AccessDeniedException', 'UnauthorizedOperation']:
+            raise PermissionError(f"Access denied to list IAM roles in {region}: {str(e)}")
 
     # Process each discovered role
     for role_arn in role_arns:
@@ -258,6 +265,15 @@ def get_current_state(
                         'accessible': False,
                         'error': f'Insufficient permissions: {error_code}'
                     }
+                    # Track the error
+                    if error_tracker:
+                        error_tracker.add_error(
+                            service='iam',
+                            region=region,
+                            error_code=error_code,
+                            error_message=f'Access denied to role {role_name}: {str(e)}',
+                            api_call='get_role'
+                        )
                 else:
                     print(f"Warning: Error processing role {role_arn}: {str(e)}")
 

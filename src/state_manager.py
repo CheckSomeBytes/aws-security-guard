@@ -120,7 +120,34 @@ def get_service_state(state_directory: str, account_id: str, service: str, regio
     if not state:
         return None
 
-    return state.get('regions', {}).get(region, {}).get(service)
+    service_state = state.get('regions', {}).get(region, {}).get(service)
+
+    # Validate that service_state is a dict (not a list or other type)
+    # This can happen if state was created by test code or an older version
+    if service_state is not None and not isinstance(service_state, dict):
+        print(f"Warning: Invalid state type for {service} in {region} (expected dict, got {type(service_state).__name__}). Ignoring previous state.")
+        return None
+
+    # Additional validation for nested structures
+    # Check if nested values are lists when they should be dicts
+    if service_state:
+        if service == 'guardduty':
+            # GuardDuty expects {'detectors': {}, 'suppression_rules': {}}
+            if 'detectors' in service_state and not isinstance(service_state['detectors'], dict):
+                print(f"Warning: Invalid guardduty.detectors type in {region} (expected dict, got {type(service_state['detectors']).__name__}). Ignoring previous state.")
+                return None
+            if 'suppression_rules' in service_state and not isinstance(service_state['suppression_rules'], dict):
+                print(f"Warning: Invalid guardduty.suppression_rules type in {region} (expected dict, got {type(service_state['suppression_rules']).__name__}). Ignoring previous state.")
+                return None
+        else:
+            # For cloudtrail, eventbridge, s3, sqs, sns, lambda, iam:
+            # Check that all values are dicts (not lists)
+            for key, value in service_state.items():
+                if not isinstance(value, dict):
+                    print(f"Warning: Invalid {service}.{key} type in {region} (expected dict, got {type(value).__name__}). Ignoring previous state.")
+                    return None
+
+    return service_state
 
 
 def update_service_state(
