@@ -2,7 +2,7 @@
 """
 Test Infrastructure Script
 
-Creates, modifies, and deletes AWS resources to test AWS Security Watch functionality.
+Creates, modifies, and deletes AWS resources to test AWS Security Guard functionality.
 Tests the following scenarios:
 - CloudTrail: StopLogging, S3 bucket changes, event selector changes, DeleteTrail
 - S3: Bucket encryption, object operations, size reduction monitoring
@@ -144,9 +144,9 @@ def test_cloudtrail(session: boto3.Session, region: str, test_name: str, interac
     cloudtrail = session.client('cloudtrail', region_name=region)
     s3 = session.client('s3', region_name=region)
 
-    trail_name = f"aws-security-watch-test-trail-{test_name}"
-    bucket1_name = f"aws-security-watch-test-bucket1-{test_name}".lower()
-    bucket2_name = f"aws-security-watch-test-bucket2-{test_name}".lower()
+    trail_name = f"aws-security-guard-test-trail-{test_name}"
+    bucket1_name = f"aws-security-guard-test-bucket1-{test_name}".lower()
+    bucket2_name = f"aws-security-guard-test-bucket2-{test_name}".lower()
 
     try:
         # Create S3 buckets
@@ -241,7 +241,7 @@ def test_guardduty(session: boto3.Session, region: str, test_name: str, interact
 
     detector_id = None
     created_detector = False  # Track if we created the detector
-    filter_name = f"aws-security-watch-test-filter-{test_name}"
+    filter_name = f"aws-security-guard-test-filter-{test_name}"
 
     try:
         # Check for existing detectors
@@ -358,8 +358,8 @@ def test_s3_monitoring(session: boto3.Session, region: str, test_name: str, inte
     cloudtrail = session.client('cloudtrail', region_name=region)
     s3 = session.client('s3', region_name=region)
 
-    trail_name = f"aws-security-watch-test-trail-{test_name}"
-    bucket_name = f"aws-security-watch-test-bucket-s3mon-{test_name}".lower()
+    trail_name = f"aws-security-guard-test-trail-{test_name}"
+    bucket_name = f"aws-security-guard-test-bucket-s3mon-{test_name}".lower()
 
     try:
         # Step 1: Create S3 bucket and CloudTrail trail together
@@ -459,9 +459,9 @@ def test_sqs_monitoring(session: boto3.Session, region: str, test_name: str, int
     s3 = session.client('s3', region_name=region)
     sqs = session.client('sqs', region_name=region)
 
-    trail_name = f"aws-security-watch-test-trail-{test_name}"
-    bucket_name = f"aws-security-watch-test-bucket-sqsmon-{test_name}".lower()
-    queue_name = f"aws-security-watch-test-queue-{test_name}"
+    trail_name = f"aws-security-guard-test-trail-{test_name}"
+    bucket_name = f"aws-security-guard-test-bucket-sqsmon-{test_name}".lower()
+    queue_name = f"aws-security-guard-test-queue-{test_name}"
     queue_url = None
 
     try:
@@ -619,9 +619,9 @@ def test_sns_monitoring(session: boto3.Session, region: str, test_name: str, int
     sts = session.client('sts')
 
     account_id = sts.get_caller_identity()['Account']
-    bucket_name = f"aws-security-watch-test-bucket1-{test_name}"
-    trail_name = f"aws-security-watch-test-trail-{test_name}"
-    topic_name = f"aws-security-watch-test-topic-{test_name}"
+    bucket_name = f"aws-security-guard-test-bucket1-{test_name}"
+    trail_name = f"aws-security-guard-test-trail-{test_name}"
+    topic_name = f"aws-security-guard-test-topic-{test_name}"
     topic_arn = None
 
     try:
@@ -799,7 +799,7 @@ def test_eventbridge(session: boto3.Session, region: str, test_name: str, intera
     print(f"\n=== Testing EventBridge in {region} ===")
     events = session.client('events', region_name=region)
 
-    rule_name = f"aws-security-watch-test-rule-{test_name}"
+    rule_name = f"aws-security-guard-test-rule-{test_name}"
 
     try:
         # Test 1: Create rule
@@ -879,13 +879,13 @@ def test_iam_monitoring(session: boto3.Session, region: str, test_name: str, int
     s3 = session.client('s3')
 
     # Role names
-    lambda_exec_role = f"aws-security-watch-test-lambda-exec-{test_name}"
-    lambda_service_role = f"aws-security-watch-test-lambda-svc-{test_name}"
-    s3_service_role = f"aws-security-watch-test-s3-svc-{test_name}"
-    multi_service_role = f"aws-security-watch-test-multi-svc-{test_name}"
+    lambda_exec_role = f"aws-security-guard-test-lambda-exec-{test_name}"
+    lambda_service_role = f"aws-security-guard-test-lambda-svc-{test_name}"
+    s3_service_role = f"aws-security-guard-test-s3-svc-{test_name}"
+    multi_service_role = f"aws-security-guard-test-multi-svc-{test_name}"
 
-    lambda_function_name = f"aws-security-watch-test-lambda-{test_name}"
-    bucket_name = f"aws-security-watch-test-bucket-iam-{test_name}".lower()
+    lambda_function_name = f"aws-security-guard-test-lambda-{test_name}"
+    bucket_name = f"aws-security-guard-test-bucket-iam-{test_name}".lower()
 
     created_roles = []
     lambda_exec_role_arn = None
@@ -1177,7 +1177,7 @@ def generate_random_test_name(length: int = 8) -> str:
 
 def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_regions: bool = False) -> None:
     """
-    Comprehensive cleanup of all test resources with 'aws-security-watch-test' prefix
+    Comprehensive cleanup of all test resources with 'aws-security-guard-test' prefix
 
     Args:
         session: boto3 session with appropriate credentials
@@ -1185,7 +1185,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
         all_regions: If True, clean resources across all available regions
     """
     print("\n" + "=" * 70)
-    print("=== CLEANUP: Removing all aws-security-watch-test resources ===")
+    print("=== CLEANUP: Removing all aws-security-guard-test resources ===")
     print("=" * 70)
 
     # Determine regions to clean
@@ -1230,7 +1230,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
                 else:
                     trail_name = trail_arn
 
-                if 'aws-security-watch-test' in trail_name.lower():
+                if 'aws-security-guard-test' in trail_name.lower():
                     try:
                         # Stop logging first (use ARN for cross-region trails)
                         try:
@@ -1254,7 +1254,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
                 response = s3.list_buckets()
                 for bucket in response.get('Buckets', []):
                     bucket_name = bucket['Name']
-                    if 'aws-security-watch-test' in bucket_name.lower():
+                    if 'aws-security-guard-test' in bucket_name.lower():
                         try:
                             # Get bucket region
                             try:
@@ -1276,7 +1276,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
         # 3. Clean SQS queues
         try:
             sqs = session.client('sqs', region_name=region_name)
-            response = sqs.list_queues(QueueNamePrefix='aws-security-watch-test')
+            response = sqs.list_queues(QueueNamePrefix='aws-security-guard-test')
             for queue_url in response.get('QueueUrls', []):
                 try:
                     sqs.delete_queue(QueueUrl=queue_url)
@@ -1296,7 +1296,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
                 for topic in page.get('Topics', []):
                     topic_arn = topic['TopicArn']
                     topic_name = topic_arn.split(':')[-1]
-                    if 'aws-security-watch-test' in topic_name.lower():
+                    if 'aws-security-guard-test' in topic_name.lower():
                         try:
                             sns.delete_topic(TopicArn=topic_arn)
                             print(f"✓ Deleted SNS topic: {topic_name}")
@@ -1314,7 +1314,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
                 try:
                     filter_response = guardduty.list_filters(DetectorId=detector_id)
                     for filter_name in filter_response.get('FilterNames', []):
-                        if 'aws-security-watch-test' in filter_name.lower():
+                        if 'aws-security-guard-test' in filter_name.lower():
                             try:
                                 guardduty.delete_filter(DetectorId=detector_id, FilterName=filter_name)
                                 print(f"✓ Deleted GuardDuty filter: {filter_name}")
@@ -1333,7 +1333,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
             for page in paginator.paginate():
                 for rule in page.get('Rules', []):
                     rule_name = rule['Name']
-                    if 'aws-security-watch-test' in rule_name.lower():
+                    if 'aws-security-guard-test' in rule_name.lower():
                         try:
                             # Remove targets first
                             try:
@@ -1359,7 +1359,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
             for page in paginator.paginate():
                 for function in page.get('Functions', []):
                     function_name = function['FunctionName']
-                    if 'aws-security-watch-test' in function_name.lower():
+                    if 'aws-security-guard-test' in function_name.lower():
                         try:
                             lambda_client.delete_function(FunctionName=function_name)
                             print(f"✓ Deleted Lambda function: {function_name}")
@@ -1377,7 +1377,7 @@ def cleanup_all_test_resources(session: boto3.Session, region: str = None, all_r
             for page in paginator.paginate():
                 for role in page.get('Roles', []):
                     role_name = role['RoleName']
-                    if 'aws-security-watch-test' in role_name.lower():
+                    if 'aws-security-guard-test' in role_name.lower():
                         try:
                             # Detach all managed policies
                             try:

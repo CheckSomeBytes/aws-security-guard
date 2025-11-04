@@ -1,4 +1,4 @@
-# AWS Security Watch
+# AWS Security Guard
 
 A Python-based monitoring tool that tracks configuration changes across AWS security services and generates CloudTrail-style logs.
 
@@ -79,7 +79,7 @@ Monitors the following AWS services across all regions:
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd aws-security-watch
+cd aws-security-guard
 ```
 
 2. Install dependencies:
@@ -193,7 +193,7 @@ Override the global setting by adding a `monitors` array to specific accounts:
 ### Command-Line Arguments
 
 ```bash
-python aws_security_watch.py [OPTIONS]
+python aws-security-guard.py [OPTIONS]
 
 Options:
   --profile PROFILE        AWS profile name to use
@@ -209,44 +209,44 @@ Options:
 
 **Simple usage with AWS profile:**
 ```bash
-python aws_security_watch.py --profile myprofile
+python aws-security-guard.py --profile myprofile
 ```
 
 **With custom monitoring interval:**
 ```bash
-python aws_security_watch.py --profile myprofile --interval 300
+python aws-security-guard.py --profile myprofile --interval 300
 ```
 
 **With configuration file for multi-account monitoring:**
 ```bash
-python aws_security_watch.py --config config.json
+python aws-security-guard.py --config config.json
 ```
 
 **Using AWS profile with custom config file:**
 ```bash
-python aws_security_watch.py --profile myprofile --config config.json
+python aws-security-guard.py --profile myprofile --config config.json
 ```
 
 **All custom settings:**
 ```bash
-python aws_security_watch.py --profile myprofile --interval 180 --log-file custom.log --state-dir custom-state
+python aws-security-guard.py --profile myprofile --interval 180 --log-file custom.log --state-dir custom-state
 ```
 
 **With increased parallelization (faster for many regions):**
 ```bash
-python aws_security_watch.py --profile myprofile --max-workers 20
+python aws-security-guard.py --profile myprofile --max-workers 20
 ```
 
 **With verbose AWS API logging (for debugging):**
 ```bash
-python aws_security_watch.py --profile myprofile --verbose
+python aws-security-guard.py --profile myprofile --verbose
 ```
 
 **Using environment variables (no arguments):**
 ```bash
 export AWS_ACCESS_KEY_ID=your_key
 export AWS_SECRET_ACCESS_KEY=your_secret
-python aws_security_watch.py
+python aws-security-guard.py
 ```
 
 ### Performance Notes
@@ -276,7 +276,7 @@ Services like S3, SQS, SNS, Lambda, and IAM discover resources from upstream ser
 Enable verbose mode with `--verbose` or `-v` to see all AWS API calls being made:
 
 ```bash
-python aws_security_watch.py --profile myprofile --verbose
+python aws-security-guard.py --profile myprofile --verbose
 ```
 
 This will output detailed logs showing:
@@ -392,7 +392,7 @@ python testing/test_infrastructure.py --profile myprofile --region us-west-2 --t
 ### What It Does
 
 The test script will:
-1. Create test resources (trails, detectors, rules) with `aws-security-watch-test-*` prefix
+1. Create test resources (trails, detectors, rules) with `aws-security-guard-test-*` prefix
 2. Modify configurations
 3. Delete resources
 4. Clean up all created resources
@@ -404,7 +404,7 @@ The test script will:
 Run the monitoring tool alongside the test script to verify change detection.
 
 **Recommended workflow:**
-1. Start the monitoring tool: `python aws_security_watch.py --profile myprofile --interval 60`
+1. Start the monitoring tool: `python aws-security-guard.py --profile myprofile --interval 60`
 2. In another terminal, run the test script in interactive mode: `python testing/test_infrastructure.py --profile myprofile -i`
 3. Watch the monitoring tool detect each change in real-time
 4. Press Enter in the test script terminal to proceed to the next change
@@ -412,8 +412,8 @@ Run the monitoring tool alongside the test script to verify change detection.
 ## Project Structure
 
 ```
-aws-security-watch/
-├── aws_security_watch.py       # Main script
+aws-security-guard/
+├── aws-security-guard.py       # Main script
 ├── config.example.json         # Example configuration
 ├── requirements.txt            # Python dependencies
 ├── src/

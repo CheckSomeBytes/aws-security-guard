@@ -19,8 +19,8 @@
         "s3:PutObject"
       ],
       "Resource": [
-        "arn:aws:s3:::aws-security-watch-test-bucket*",
-        "arn:aws:s3:::aws-security-watch-test-bucket*/*"
+        "arn:aws:s3:::aws-security-guard-test-bucket*",
+        "arn:aws:s3:::aws-security-guard-test-bucket*/*"
       ]
     },
     {
@@ -116,7 +116,7 @@
         "sqs:GetQueueAttributes",
         "sqs:GetQueueUrl"
       ],
-      "Resource": "arn:aws:sqs:*:*:aws-security-watch-test-*"
+      "Resource": "arn:aws:sqs:*:*:aws-security-guard-test-*"
     },
     {
       "Sid": "SNSManagement",

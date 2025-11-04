@@ -1,6 +1,6 @@
 # Integration Test Guide
 
-This guide explains how to use the integration test to verify the end-to-end functionality of AWS Security Watch.
+This guide explains how to use the integration test to verify the end-to-end functionality of AWS Security Guard.
 
 ## Overview
 
@@ -16,7 +16,7 @@ The integration test follows this workflow:
 
 ```
 1. Clean up previous test artifacts (logs, state files)
-2. Start aws_security_watch.py in background
+2. Start aws-security-guard.py in background
 3. Wait for baseline scan to complete (2x monitor interval)
 4. Run test_infrastructure.py to trigger AWS changes
    - Creates resources (trails, buckets, queues, topics, etc.)
@@ -249,11 +249,11 @@ Detailed results are saved to `integration_test_results.json`:
 **Problem**: Monitor process exits immediately
 
 **Solution**:
-1. Check that `aws_security_watch.py` exists in the current directory
+1. Check that `aws-security-guard.py` exists in the current directory
 2. Verify AWS credentials are configured correctly
 3. Check for Python syntax errors by running manually:
    ```bash
-   python aws_security_watch.py --profile myprofile --interval 30
+   python aws-security-guard.py --profile myprofile --interval 30
    ```
 
 ### No State Changes Detected
@@ -264,7 +264,7 @@ Detailed results are saved to `integration_test_results.json`:
 1. Monitor interval too short - increase `--monitor-interval`
 2. AWS API delays - wait longer between test steps
 3. Permissions issue - check IAM policies
-4. Monitor not running - check process with `ps aux | grep aws_security_watch`
+4. Monitor not running - check process with `ps aux | grep aws-security-guard`
 
 **Solution**:
 ```bash
@@ -286,7 +286,7 @@ python testing/integration_test.py --profile myprofile --monitor-interval 60
 2. Check log file manually: `cat security-watch-test.log`
 3. Run monitor manually first to establish baseline:
    ```bash
-   python aws_security_watch.py --profile myprofile --interval 30 --state-dir state-test
+   python aws-security-guard.py --profile myprofile --interval 30 --state-dir state-test
    # Wait for one cycle, then Ctrl+C
    # Now run integration test
    ```
@@ -323,7 +323,7 @@ To skip interactive prompts, you would need to modify the integration test to pa
 
 ### 1. Use Isolated Test Resources
 
-The test creates resources with `aws-security-watch-test-` prefix. Clean up after testing:
+The test creates resources with `aws-security-guard-test-` prefix. Clean up after testing:
 ```bash
 python testing/test_infrastructure.py --profile myprofile --cleanup
 ```
@@ -336,7 +336,7 @@ Don't mix test state with production monitoring:
 python testing/integration_test.py --state-dir state-test
 
 # Production
-python aws_security_watch.py --state-dir state
+python aws-security-guard.py --state-dir state
 ```
 
 ### 3. Monitor Interval Tuning
@@ -414,7 +414,7 @@ For interactive testing and debugging:
 
 ### Step 1: Start Monitor Manually
 ```bash
-python aws_security_watch.py \
+python aws-security-guard.py \
   --profile myprofile \
   --interval 30 \
   --state-dir state-test \

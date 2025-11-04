@@ -344,7 +344,7 @@ When you run the integration test, you should see:
    aws sts get-caller-identity --profile myprofile
 
    # Test monitor manually
-   python aws_security_watch.py --profile myprofile --interval 30 --state-dir state-test
+   python aws-security-guard.py --profile myprofile --interval 30 --state-dir state-test
    ```
 
 4. **Review validation output**:

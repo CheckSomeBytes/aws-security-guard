@@ -1,4 +1,4 @@
-# AWS Security Watch - Testing Guide
+# AWS Security Guard - Testing Guide
 
 This guide provides step-by-step instructions for testing the monitoring system to ensure it correctly detects infrastructure changes and generates appropriate logs.
 
@@ -46,7 +46,7 @@ rm state/*.json
 In Terminal 1, start the monitoring script:
 
 ```bash
-python3 aws_security_watch.py \
+python3 aws-security-guard.py \
   --profile sec-watch-test \
   --state-dir state \
   --log-file security-watch.log \
@@ -117,7 +117,7 @@ The verification script will guide you through checking each test scenario:
        "region": "us-east-1",
        "service": "cloudtrail",
        "event_name": "StopLogging",
-       "trail_name": "aws-security-watch-test-trail-TESTNAME"
+       "trail_name": "aws-security-guard-test-trail-TESTNAME"
      }
      ```
 
@@ -129,7 +129,7 @@ The verification script will guide you through checking each test scenario:
 **What to verify:**
 1. **State File Update**
    - Location: `regions.<region>.cloudtrail.<trail-name>.s3_bucket`
-   - Expected: `aws-security-watch-test-bucket2-TESTNAME`
+   - Expected: `aws-security-guard-test-bucket2-TESTNAME`
 
 2. **Log Entry**
    - Expected event: `UpdateTrailS3Bucket`
@@ -177,7 +177,7 @@ cat state/<account-id>.json | jq .
 cat state/<account-id>.json | jq '.regions["us-east-1"].cloudtrail'
 
 # Check if trail exists in state
-cat state/<account-id>.json | jq '.regions["us-east-1"].cloudtrail["aws-security-watch-test-trail-TESTNAME"]'
+cat state/<account-id>.json | jq '.regions["us-east-1"].cloudtrail["aws-security-guard-test-trail-TESTNAME"]'
 ```
 
 ### Check Log File Manually
@@ -222,7 +222,7 @@ diff -u state/before.json state/after.json
 **Solutions:**
 ```bash
 # Check monitoring script is running
-ps aux | grep aws_security_watch.py
+ps aux | grep aws-security-guard.py
 
 # Check monitoring script output for errors
 # (should be visible in Terminal 1)
@@ -322,10 +322,10 @@ To test with all regions and services:
 
 ```bash
 # Run with default settings (all regions)
-python3 aws_security_watch.py --profile sec-watch-test
+python3 aws-security-guard.py --profile sec-watch-test
 
 # Monitor resource usage
-top -p $(pgrep -f aws_security_watch.py)
+top -p $(pgrep -f aws-security-guard.py)
 ```
 
 ## Expected Results

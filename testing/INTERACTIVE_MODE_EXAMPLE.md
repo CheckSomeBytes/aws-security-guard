@@ -12,7 +12,7 @@ python testing/test_infrastructure.py --profile myprofile --interactive
 ```
 No test name provided, using generated name: a7x9k2m1
 
-AWS Security Watch Test Suite
+AWS Security Guard Test Suite
 ==================================================
 Using AWS profile: myprofile
 Test Name: a7x9k2m1
@@ -22,10 +22,10 @@ Mode: Interactive (press Enter to proceed)
 
 
 === Testing CloudTrail in us-east-1 ===
-Created S3 bucket: aws-security-watch-test-bucket1-a7x9k2m1
-Created S3 bucket: aws-security-watch-test-bucket2-a7x9k2m1
-Creating trail: aws-security-watch-test-trail-a7x9k2m1
-Started logging for trail: aws-security-watch-test-trail-a7x9k2m1
+Created S3 bucket: aws-security-guard-test-bucket1-a7x9k2m1
+Created S3 bucket: aws-security-guard-test-bucket2-a7x9k2m1
+Creating trail: aws-security-guard-test-trail-a7x9k2m1
+Started logging for trail: aws-security-guard-test-trail-a7x9k2m1
 
 Trail created and logging started.
 Press Enter to continue...
@@ -42,7 +42,7 @@ Press Enter to continue...
 [User presses Enter]
 
 Test 2: Changing S3 destination...
-✓ S3 destination changed to aws-security-watch-test-bucket2-a7x9k2m1
+✓ S3 destination changed to aws-security-guard-test-bucket2-a7x9k2m1
 Press Enter to continue...
 [User presses Enter]
 
@@ -54,8 +54,8 @@ Press Enter to continue...
 Test 4: Deleting trail...
 ✓ Trail deleted
 Cleaning up CloudTrail resources...
-Deleted S3 bucket: aws-security-watch-test-bucket1-a7x9k2m1
-Deleted S3 bucket: aws-security-watch-test-bucket2-a7x9k2m1
+Deleted S3 bucket: aws-security-guard-test-bucket1-a7x9k2m1
+Deleted S3 bucket: aws-security-guard-test-bucket2-a7x9k2m1
 
 
 === Testing GuardDuty in us-east-1 ===
@@ -66,7 +66,7 @@ Press Enter to continue...
 [User presses Enter]
 
 Test 1: Creating suppression rule...
-✓ Suppression rule created: aws-security-watch-test-filter-a7x9k2m1
+✓ Suppression rule created: aws-security-guard-test-filter-a7x9k2m1
 Press Enter to continue...
 [User presses Enter]
 
@@ -86,7 +86,7 @@ Deleted detector: 12345abcdef67890
 
 === Testing EventBridge in us-east-1 ===
 Test 1: Creating EventBridge rule...
-✓ EventBridge rule created: aws-security-watch-test-rule-a7x9k2m1
+✓ EventBridge rule created: aws-security-guard-test-rule-a7x9k2m1
 Rule created.
 Press Enter to continue...
 [User presses Enter]
@@ -114,7 +114,7 @@ Cleaning up EventBridge resources...
 
 ### Terminal 1: Start Monitoring Tool
 ```bash
-python aws_security_watch.py --profile myprofile --interval 60 --max-workers 5
+python aws-security-guard.py --profile myprofile --interval 60 --max-workers 5
 ```
 
 Output:

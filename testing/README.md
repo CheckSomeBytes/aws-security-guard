@@ -1,6 +1,6 @@
-# AWS Security Watch Testing
+# AWS Security Guard Testing
 
-This directory contains comprehensive testing tools for AWS Security Watch.
+This directory contains comprehensive testing tools for AWS Security Guard.
 
 ## Quick Start
 
@@ -31,7 +31,7 @@ python integration_test.py --profile myprofile --service all
 ```
 
 **What it does**:
-1. Starts aws-security-watch monitor in background
+1. Starts aws-security-guard monitor in background
 2. Runs infrastructure tests to trigger AWS changes
 3. Verifies state files are updated
 4. Verifies logs are generated
@@ -99,7 +99,7 @@ For debugging and development:
 
 ```bash
 # Terminal 1: Start monitor
-python ../aws_security_watch.py --profile myprofile --interval 30 --state-dir state-test --verbose
+python ../aws-security-guard.py --profile myprofile --interval 30 --state-dir state-test --verbose
 
 # Terminal 2: Run infrastructure test
 python test_infrastructure.py --profile myprofile --service cloudtrail --interactive
@@ -201,7 +201,7 @@ rm -f integration_test_results.json
 
 ```bash
 # Check for errors
-python ../aws_security_watch.py --profile myprofile --interval 30 --state-dir state-test
+python ../aws-security-guard.py --profile myprofile --interval 30 --state-dir state-test
 ```
 
 ### No Logs Generated
@@ -227,7 +227,7 @@ aws cloudtrail describe-trails --profile myprofile
 # List remaining test resources
 aws resourcegroupstaggingapi get-resources \
   --profile myprofile \
-  --query 'ResourceTagMappingList[?contains(ResourceARN, `aws-security-watch-test`)]'
+  --query 'ResourceTagMappingList[?contains(ResourceARN, `aws-security-guard-test`)]'
 
 # Force cleanup
 python test_infrastructure.py --profile myprofile --cleanup --cleanup-all-regions

@@ -1573,7 +1573,7 @@
                   "Action": "sts:AssumeRole",
                   "Condition": {
                     "StringEquals": {
-                      "aws:SourceArn": "arn:aws:cloudtrail:ap-northeast-2:833715826468:trail/aws-security-watch-test-trail-1objbt11",
+                      "aws:SourceArn": "arn:aws:cloudtrail:ap-northeast-2:833715826468:trail/aws-security-guard-test-trail-1objbt11",
                       "aws:SourceAccount": "833715826468"
                     }
                   }
@@ -1582,15 +1582,15 @@
             },
             "attached_managed_policies": [
               {
-                "policy_name": "Cloudtrail-CW-access-policy-aws-security-watch-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd",
-                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/Cloudtrail-CW-access-policy-aws-security-watch-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd"
+                "policy_name": "Cloudtrail-CW-access-policy-aws-security-guard-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd",
+                "policy_arn": "arn:aws:iam::833715826468:policy/service-role/Cloudtrail-CW-access-policy-aws-security-guard-test-trail-1objbt11-a7ca100a-2f2f-405d-bfec-b341979905cd"
               }
             ],
             "inline_policies": {},
             "tags": {},
             "max_session_duration": 3600,
             "path": "/service-role/",
-            "description": "Role for config CloudWathLogs for trail aws-security-watch-test-trail-1objbt11",
+            "description": "Role for config CloudWathLogs for trail aws-security-guard-test-trail-1objbt11",
             "accessible": true
           },
           "arn:aws:iam::833715826468:role/service-role/workshop-slack-send-instance-info-role-axz2z8vg": {

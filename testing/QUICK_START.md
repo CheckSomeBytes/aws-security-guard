@@ -1,6 +1,6 @@
 # Integration Test Quick Start
 
-Get started testing AWS Security Watch in 5 minutes.
+Get started testing AWS Security Guard in 5 minutes.
 
 ## Quick Test (CloudTrail Only)
 
@@ -48,10 +48,10 @@ Findings log: integration_test_findings.json
 Running in automated mode - no user input required
 
 ======================================================================
-Starting AWS Security Watch Monitor
+Starting AWS Security Guard Monitor
 ======================================================================
 
-Command: python aws_security_watch.py --interval 30 --state-dir state-test --log-file security-watch-test.log --profile myprofile
+Command: python aws-security-guard.py --interval 30 --state-dir state-test --log-file security-watch-test.log --profile myprofile
 ✓ Monitor started (PID: 12345)
 ℹ Waiting 60 seconds for initial baseline scan...
   ... 60 seconds remaining
@@ -70,10 +70,10 @@ Testing CloudTrail Monitoring in us-east-1
 ℹ This will create, modify, and delete AWS resources to trigger monitoring events
 
 === Testing CloudTrail in us-east-1 ===
-Created S3 bucket: aws-security-watch-test-bucket1-abc123
-Created S3 bucket: aws-security-watch-test-bucket2-abc123
-Creating trail: aws-security-watch-test-trail-abc123
-Started logging for trail: aws-security-watch-test-trail-abc123
+Created S3 bucket: aws-security-guard-test-bucket1-abc123
+Created S3 bucket: aws-security-guard-test-bucket2-abc123
+Creating trail: aws-security-guard-test-trail-abc123
+Started logging for trail: aws-security-guard-test-trail-abc123
 Waiting 35 seconds...
 
 Test 1: Stopping logging...
@@ -86,7 +86,7 @@ Waiting 35 seconds...
 
 Test 2: Changing S3 destination...
 Waiting 35 seconds...
-✓ S3 destination changed to aws-security-watch-test-bucket2-abc123
+✓ S3 destination changed to aws-security-guard-test-bucket2-abc123
 
 Test 3: Updating event selectors to include S3 data events...
 Waiting 35 seconds...
@@ -133,7 +133,7 @@ Findings Summary:
 ✓ Findings log saved to integration_test_findings.json
 
 ======================================================================
-Stopping AWS Security Watch Monitor
+Stopping AWS Security Guard Monitor
 ======================================================================
 
 ✓ Monitor stopped (PID: 12345)
@@ -143,7 +143,7 @@ Stopping AWS Security Watch Monitor
 
 The integration test:
 
-1. ✅ Started aws-security-watch in the background
+1. ✅ Started aws-security-guard in the background
 2. ✅ Waited for baseline scan (first run, no logs)
 3. ✅ Created a CloudTrail trail with S3 bucket
 4. ✅ Stopped logging (should be logged)
@@ -171,7 +171,7 @@ You should see entries like:
   "eventName": "StopLogging",
   "awsRegion": "us-east-1",
   "responseElements": {
-    "trailName": "aws-security-watch-test-trail-abc123"
+    "trailName": "aws-security-guard-test-trail-abc123"
   },
   "eventID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
   "readOnly": false,
@@ -245,11 +245,11 @@ python testing/test_infrastructure.py --profile myprofile --cleanup --cleanup-al
 
 ### "Monitor process exited prematurely"
 
-**Cause**: aws_security_watch.py failed to start
+**Cause**: aws-security-guard.py failed to start
 
 **Fix**: Run manually to see the error:
 ```bash
-python aws_security_watch.py --profile myprofile --interval 30 --state-dir state-test
+python aws-security-guard.py --profile myprofile --interval 30 --state-dir state-test
 ```
 
 ### "No new log entries generated"

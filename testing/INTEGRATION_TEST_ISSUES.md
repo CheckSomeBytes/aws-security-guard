@@ -323,7 +323,7 @@ These issues can only be confirmed with actual AWS testing:
    aws sts get-caller-identity --profile myprofile
 
    # Verify monitor can run
-   python aws_security_watch.py --profile myprofile --interval 30 --state-dir test-state
+   python aws-security-guard.py --profile myprofile --interval 30 --state-dir test-state
    # Let it run one cycle, then Ctrl+C
 
    # Verify test infrastructure can create resources

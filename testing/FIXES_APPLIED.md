@@ -102,7 +102,7 @@ self.print_info(f"Monitor output saved to: {self.monitor_output_file}")
 **Location**: `monitor_output.log`
 
 **Contents**:
-- All stdout from aws_security_watch.py
+- All stdout from aws-security-guard.py
 - Region scanning progress
 - Service check results
 - State file updates
@@ -268,7 +268,7 @@ grep "Validating monitor" integration_test_results.log
 
 - [ ] Monitor starts successfully
 - [ ] `monitor_output.log` file is created
-- [ ] Monitor output contains actual log lines from aws_security_watch
+- [ ] Monitor output contains actual log lines from aws-security-guard
 - [ ] Validation runs after baseline scan
 - [ ] All 5 validation checks show results
 - [ ] State file is created and validated

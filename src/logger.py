@@ -354,7 +354,7 @@ def log_api_failures(
 
     log_event(
         log_file=log_file,
-        event_source="aws-security-watch.internal",
+        event_source="aws-security-guard.internal",
         event_name="MonitoringAPIFailure",
         account_id=account_id,
         region="global",

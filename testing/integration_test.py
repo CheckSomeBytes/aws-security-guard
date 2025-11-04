@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Integration Test for AWS Security Watch
+Integration Test for AWS Security Guard
 
-This test validates the end-to-end functionality of aws-security-watch by:
+This test validates the end-to-end functionality of aws-security-guard by:
 1. Starting the monitoring tool in the background
 2. Running test_infrastructure.py to trigger AWS changes
 3. Verifying that state files are updated when resources change
@@ -136,13 +136,13 @@ class IntegrationTest:
             self.print_warning(f"Error capturing monitor output: {str(e)}")
 
     def start_monitor(self) -> bool:
-        """Start aws-security-watch in the background"""
-        self.print_header("Starting AWS Security Watch Monitor")
+        """Start aws-security-guard in the background"""
+        self.print_header("Starting AWS Security Guard Monitor")
 
         # Build command
         cmd = [
             sys.executable,
-            'aws_security_watch.py',
+            'aws-security-guard.py',
             '--interval', str(self.monitor_interval),
             '--state-dir', str(self.state_dir),
             '--log-file', str(self.log_file)
