@@ -500,6 +500,9 @@ def main():
     parser.add_argument('--max-workers', type=int, default=10, help='Maximum parallel region workers (default: 10)')
     parser.add_argument('--region', type=str, help='Specific AWS region to monitor (optional, default: all regions)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging of AWS API calls')
+    parser.add_argument('--web', action='store_true', help='Also serve the web GUI (pipeline diagram, history, alerts)')
+    parser.add_argument('--web-host', type=str, default='0.0.0.0', help='Web GUI bind address (default: 0.0.0.0)')
+    parser.add_argument('--web-port', type=int, default=54100, help='Web GUI port (default: 54100)')
     args = parser.parse_args()
 
     # Configure logging based on verbose flag
@@ -595,6 +598,16 @@ def main():
     print(f"Log file: {log_file}")
     print(f"State directory: {state_directory}")
     print(f"Max parallel workers: {args.max_workers}")
+
+    # Start the GUI before touching AWS so a port conflict fails fast
+    if args.web:
+        from web import server as web_server
+        try:
+            web_server.start_in_background(args.web_host, args.web_port, state_directory, log_file)
+        except OSError as e:
+            print(f"Error: Could not start web GUI on {args.web_host}:{args.web_port}: {e}")
+            sys.exit(1)
+        print(f"Web GUI: http://{args.web_host}:{args.web_port}")
     print()
 
     # Get base session (with profile if specified)
