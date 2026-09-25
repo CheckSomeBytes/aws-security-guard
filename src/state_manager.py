@@ -5,11 +5,15 @@ Handles persistent storage and retrieval of AWS resource configurations
 to enable change detection between monitoring cycles.
 """
 
+import gzip
 import json
 import tempfile
 import shutil
-from typing import Dict, Any, Optional
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional, List
 from pathlib import Path
+
+HISTORY_DIRNAME = 'history'
 
 
 def ensure_state_directory(state_directory: str) -> Path:
@@ -101,6 +105,58 @@ def save_state(state_directory: str, account_id: str, state: Dict[str, Any]) -> 
                 Path(tmp_path).unlink()
             except:
                 pass
+        return
+
+    save_history_snapshot(state_directory, account_id, state)
+
+
+def get_history_directory(state_directory: str, account_id: str) -> Path:
+    """Directory holding timestamped snapshots of an account's state"""
+    return Path(state_directory) / HISTORY_DIRNAME / account_id
+
+
+def list_history_snapshots(state_directory: str, account_id: str) -> List[Path]:
+    """Snapshot files for an account, oldest first"""
+    history_dir = get_history_directory(state_directory, account_id)
+    if not history_dir.is_dir():
+        return []
+    return sorted(history_dir.glob('*.json.gz'))
+
+
+def load_history_snapshot(path: Path) -> Dict[str, Any]:
+    with gzip.open(path, 'rt') as f:
+        return json.load(f)
+
+
+def save_history_snapshot(state_directory: str, account_id: str, state: Dict[str, Any]) -> None:
+    """
+    Keep a timestamped, gzipped copy of the state so earlier versions of the
+    pipeline can be reviewed. Skipped when identical to the latest snapshot.
+    History is best-effort: failures never affect monitoring.
+
+    Args:
+        state_directory: Directory to store state files
+        account_id: AWS account ID
+        state: Dictionary containing current state
+    """
+    try:
+        serialized = json.dumps(state, sort_keys=True, default=str)
+        snapshots = list_history_snapshots(state_directory, account_id)
+        if snapshots:
+            latest = json.dumps(load_history_snapshot(snapshots[-1]), sort_keys=True, default=str)
+            if latest == serialized:
+                return
+
+        history_dir = get_history_directory(state_directory, account_id)
+        history_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+        snapshot_file = history_dir / f'{timestamp}.json.gz'
+        tmp_file = history_dir / f'.{timestamp}.tmp'
+        with gzip.open(tmp_file, 'wt') as f:
+            f.write(serialized)
+        shutil.move(str(tmp_file), snapshot_file)
+    except Exception as e:
+        print(f"Warning: Failed to save state history for account {account_id}: {str(e)}")
 
 
 def get_service_state(state_directory: str, account_id: str, service: str, region: str) -> Optional[Dict]:
