@@ -306,6 +306,23 @@ The tool will:
 3. Generate CloudTrail-style logs for any detected changes
 4. Continue monitoring until stopped with Ctrl+C
 
+## Web GUI
+
+A read-only web interface lives in `web/`. It uses only the Python standard library and reads the same state directory and log file the monitor writes, so it makes no AWS calls of its own.
+
+```bash
+# From the repo root, alongside the running monitor
+python web/server.py                      # http://<host>:5411
+python web/server.py --config config.json # use log_file / state_directory from the config
+python web/server.py --state-dir state --log-file security-watch.log --port 5411
+```
+
+- **Pipeline**: a diagram built from the latest state file. Its columns are sources (CloudTrail, GuardDuty, EventBridge), then S3, SNS/SQS, Lambda and IAM. Each resource is labelled with its name. Hover over a resource for its key settings, or click it for its connections, full state and related alerts. Dashed nodes are resources that monitored resources point at but the monitor does not track itself. A red badge shows how many alerts mention that resource.
+- **History**: use the version picker (or the ‹ › buttons) to see the pipeline as it was at any earlier time. With *Highlight changes* on, resources and connections that were added, changed (with the changed fields listed) or removed since the previous version are marked. Past versions only count alerts logged up to that time.
+- **Alerts**: every event in the log file, newest first, with a severity assigned by the GUI. You can filter by severity, service, account and free text, and click a row to see the full `responseElements`.
+
+The page refreshes every 30 seconds. It binds to `0.0.0.0` by default, and it has no authentication, so keep it on a trusted network.
+
 ## Log Format
 
 Logs are written in CloudTrail-compatible JSON format:
@@ -458,6 +475,10 @@ State files are stored per account in the `state/` directory:
 - `{account-id}.json` - Contains last known configuration
 
 To reset monitoring (re-establish baseline), delete state files.
+
+### State History
+
+Every time the monitor saves a changed state, it also writes a gzipped copy to `state/history/{account-id}/{YYYYMMDDTHHMMSSZ}.json.gz`. A save that is identical to the previous copy is skipped. The web GUI uses these files to show earlier versions of the pipeline. History is kept indefinitely, so delete old snapshot files if you need to reclaim space. Deleting the whole `history/` folder only removes the timeline; it doesn't reset monitoring.
 
 ## License
 
