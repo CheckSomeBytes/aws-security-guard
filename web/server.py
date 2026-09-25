@@ -7,7 +7,7 @@ directory (to draw the log pipeline) and log file (to list alerts) that the
 monitor writes, so it can run alongside the monitor without touching AWS.
 
 Usage:
-    python web/server.py [--port 5411] [--state-dir state] [--log-file security-watch.log]
+    python web/server.py [--port 54100] [--state-dir state] [--log-file security-watch.log]
 """
 
 import argparse
@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import threading
 from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -481,10 +482,27 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json({'alerts': alerts, 'total': len(alerts)})
 
 
+DEFAULT_PORT = 54100
+
+
+def create_server(host, port, state_dir, log_file):
+    """Bind the GUI server. Raises OSError if the port is unavailable."""
+    Handler.state_dir = state_dir
+    Handler.log_file = log_file
+    return ThreadingHTTPServer((host, port), Handler)
+
+
+def start_in_background(host, port, state_dir, log_file):
+    """Serve the GUI from a daemon thread (used by aws-security-guard.py --web)."""
+    server = create_server(host, port, state_dir, log_file)
+    threading.Thread(target=server.serve_forever, name='web-gui', daemon=True).start()
+    return server
+
+
 def main():
     parser = argparse.ArgumentParser(description='Web GUI for AWS Security Guard')
     parser.add_argument('--host', default='0.0.0.0', help='Interface to bind (default: 0.0.0.0)')
-    parser.add_argument('--port', type=int, default=5411, help='Port to listen on (default: 5411)')
+    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help=f'Port to listen on (default: {DEFAULT_PORT})')
     parser.add_argument('--config', help='Monitor config file; its log_file/state_directory are used as defaults')
     parser.add_argument('--state-dir', help='State directory written by the monitor (default: state)')
     parser.add_argument('--log-file', help='Log file written by the monitor (default: security-watch.log)')
@@ -495,10 +513,9 @@ def main():
         with open(args.config) as f:
             monitoring = json.load(f).get('monitoring', {})
 
-    Handler.state_dir = args.state_dir or monitoring.get('state_directory', 'state')
-    Handler.log_file = args.log_file or monitoring.get('log_file', 'security-watch.log')
-
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server = create_server(args.host, args.port,
+                           args.state_dir or monitoring.get('state_directory', 'state'),
+                           args.log_file or monitoring.get('log_file', 'security-watch.log'))
     print(f'AWS Security Guard GUI on http://{args.host}:{args.port}')
     print(f'  state dir: {os.path.abspath(Handler.state_dir)}')
     print(f'  log file:  {os.path.abspath(Handler.log_file)}')

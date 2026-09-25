@@ -203,6 +203,9 @@ Options:
   --state-dir PATH         Directory to store state files (default: state)
   --max-workers NUM        Maximum parallel region workers (default: 10)
   --verbose, -v            Enable verbose logging of AWS API calls
+  --web                    Also serve the web GUI (see Web GUI below)
+  --web-host HOST          Web GUI bind address (default: 0.0.0.0)
+  --web-port PORT          Web GUI port (default: 54100)
 ```
 
 ### Usage Examples
@@ -310,11 +313,21 @@ The tool will:
 
 A read-only web interface lives in `web/`. It uses only the Python standard library and reads the same state directory and log file the monitor writes, so it makes no AWS calls of its own.
 
+Run the monitor and the GUI together with `--web`:
+
 ```bash
-# From the repo root, alongside the running monitor
-python web/server.py                      # http://<host>:5411
+python aws-security-guard.py --profile myprofile --web     # GUI at http://<host>:54100
+python aws-security-guard.py --profile myprofile --web --web-port 8080 --web-host 127.0.0.1
+```
+
+The GUI automatically uses the same `--log-file` / `--state-dir` (or config values) as the monitor. If the port is in use, the monitor exits immediately with an error rather than running without the GUI.
+
+The GUI can also run on its own, e.g. to browse history while the monitor is stopped:
+
+```bash
+python web/server.py                      # http://<host>:54100
 python web/server.py --config config.json # use log_file / state_directory from the config
-python web/server.py --state-dir state --log-file security-watch.log --port 5411
+python web/server.py --state-dir state --log-file security-watch.log --port 54100
 ```
 
 - **Pipeline**: a diagram built from the latest state file. Its columns are sources (CloudTrail, GuardDuty, EventBridge), then S3, SNS/SQS, Lambda and IAM. Each resource is labelled with its name. Hover over a resource for its key settings, or click it for its connections, full state and related alerts. Dashed nodes are resources that monitored resources point at but the monitor does not track itself. A red badge shows how many alerts mention that resource.
